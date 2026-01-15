@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#3b4b59">
+  <meta name="description" content="5-Day Weather Forecast App">
+  <title>Weather Forecast</title>
+  <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiV2VhdGhlciBGb3JlY2FzdCIsInNob3J0X25hbWUiOiJXZWF0aGVyIiwiZGVzY3JpcHRpb24iOiI1LURheSBXZWF0aGVyIEZvcmVjYXN0IEFwcCIsInN0YXJ0X3VybCI6Ii8iLCJkaXNwbGF5Ijoic3RhbmRhbG9uZSIsImJhY2tncm91bmRfY29sb3IiOiIjM2I0YjU5IiwidGhlbWVfY29sb3IiOiIjM2I0YjU5IiwiaWNvbnMiOlt7InNyYyI6ImRhdGE6aW1hZ2Uvc3ZnK3htbCwlM0NzdmclMjB4bWxucyUzRCdodHRwJTNBJTJGJTJGd3d3LnczLm9yZyUyRjIwMDAlMkZzdmcnJTIwd2lkdGglM0QnMTkyJyUyMGhlaWdodCUzRCcxOTInJTNFJTNDcmVjdCUyMGZpbGwlM0QnJTIzM2I0YjU5JyUyMHdpZHRoJTNEJzE5MicyMGhlaWdodCUzRCcxOTInJTJGJTNFJTNDdGV4dCUyMGZpbGwlM0QnJTIzZTFlNGUxJyUyMGZvbnQtc2l6ZSUzRCc5NicyMHglM0QnNTAnJTIweSUzRCcxMzAnJTNFJUYwJTlGJThDJUE2JTNDJTJGdGV4dCUzRSUzQyUyRnN2ZyUzRSIsInNpemVzIjoiMTkyeDE5MiIsInR5cGUiOiJpbWFnZS9zdmcreG1sIn0seyJzcmMiOiJkYXRhOmltYWdlL3N2Zyt4bWwsJTNDc3ZnJTIweG1sbnMlM0QnaHR0cCUzQSUyRiUyRnd3dy53My5vcmclMkYyMDAwJTJGc3ZnJyUyMHdpZHRoJTNEJzUxMiclMjBoZWlnaHQlM0QnNTEyJyUzRSUzQ3JlY3QlMjBmaWxsJTNEJyUyMzNiNGI1OScyMHdpZHRoJTNEJzUxMicyMGhlaWdodCUzRCc1MTInJTJGJTNFJTNDdGV4dCUyMGZpbGwlM0QnJTIzZTFlNGUxJyUyMGZvbnQtc2l6ZSUzRCcyNTYnJTIweCUzRCcxMzAnJTIweSUzRCczNTAnJTNFJUYwJTlGJThDJUE2JTNDJTJGdGV4dCUzRSUzQyUyRnN2ZyUzRSIsInNpemVzIjoiNTEyeDUxMiIsInR5cGUiOiJpbWFnZS9zdmcreG1sIn1dfQ==">
+  <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='192' height='192'%3E%3Crect fill='%233b4b59' width='192' height='192'/%3E%3Ctext fill='%23e1e4e1' font-size='96' x='50' y='130'%3E🌦%3C/text%3E%3C/svg%3E">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'IBM Plex Mono', monospace;
+      background-color: #3b4b59;
+      color: #e1e4e1;
+      height: 100vh;
+      overflow: hidden;
+      padding: 8px;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .header {
+      text-align: center;
+      margin-bottom: 8px;
+      flex-shrink: 0;
+    }
+    
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    
+    .search-container {
+      display: flex;
+      gap: 4px;
+      max-width: 500px;
+      margin: 0 auto;
+    }
+    
+    input {
+      flex: 1;
+      padding: 8px 12px;
+      border-radius: 6px;
+      border: 1px solid #4a5a69;
+      background-color: #2a3540;
+      color: #e1e4e1;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.875rem;
+    }
+    
+    input::placeholder {
+      color: #8a9aa9;
+    }
+    
+    input:focus {
+      outline: none;
+      border-color: #6a7a89;
+    }
+    
+    button {
+      padding: 8px 16px;
+      background-color: #4a5a69;
+      color: #e1e4e1;
+      border: none;
+      border-radius: 6px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 0.875rem;
+    }
+    
+    button:hover {
+      opacity: 0.8;
+    }
+    
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    
+    .error {
+      margin-top: 4px;
+      padding: 4px 12px;
+      background-color: #5a3b3b;
+      color: #ffb3b3;
+      border-radius: 6px;
+      display: inline-block;
+      font-size: 0.75rem;
+    }
+    
+    .weather-container {
+      background-color: #4a5a69;
+      border-radius: 12px;
+      padding: 12px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+    
+    .current-weather {
+      background-color: #556575;
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 12px;
+      flex-shrink: 0;
+    }
+    
+    .location {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+    
+    .location h2 {
+      font-size: 1rem;
+      font-weight: 700;
+    }
+    
+    .current-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+    }
+    
+    .metric {
+      text-align: center;
+    }
+    
+    .metric-icon {
+      width: 20px;
+      height: 20px;
+      margin: 0 auto 4px;
+    }
+    
+    .metric-label {
+      font-size: 0.625rem;
+      opacity: 0.8;
+      margin-bottom: 2px;
+    }
+    
+    .metric-value {
+      font-size: 1.25rem;
+      font-weight: 700;
+    }
+    
+    .metric-sub {
+      font-size: 0.625rem;
+      opacity: 0.7;
+      margin-top: 2px;
+    }
+    
+    .forecast-header {
+      font-size: 0.875rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+      flex-shrink: 0;
+    }
+    
+    .forecast-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 4px;
+      flex: 1;
+      align-content: start;
+    }
+    
+    .forecast-day {
+      background-color: #556575;
+      border-radius: 6px;
+      padding: 6px 4px;
+      text-align: center;
+    }
+    
+    .day-name {
+      font-weight: 600;
+      font-size: 0.625rem;
+      margin-bottom: 2px;
+    }
+    
+    .day-date {
+      font-size: 0.5rem;
+      opacity: 0.8;
+      margin-bottom: 4px;
+    }
+    
+    .day-temp {
+      font-size: 1.125rem;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    
+    .day-detail {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      font-size: 0.5rem;
+      margin-bottom: 2px;
+    }
+    
+    .day-detail svg {
+      width: 10px;
+      height: 10px;
+    }
+    
+    .empty-state {
+      text-align: center;
+      margin-top: 48px;
+    }
+    
+    .empty-icon {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto 16px;
+      opacity: 0.5;
+    }
+    
+    .empty-text {
+      font-size: 1.25rem;
+      opacity: 0.8;
+    }
+    
+    .install-prompt {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: #4a5a69;
+      padding: 16px 24px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      display: none;
+      align-items: center;
+      gap: 16px;
+      max-width: 90%;
+    }
+    
+    .install-prompt.show {
+      display: flex;
+    }
+    
+    .install-prompt button {
+      white-space: nowrap;
+    }
+    
+    @media (max-width: 768px) {
+      h1 {
+        font-size: 1.25rem;
+      }
+      
+      .current-grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 6px;
+      }
+      
+      .metric-value {
+        font-size: 1rem;
+      }
+      
+      .metric-icon {
+        width: 16px;
+        height: 16px;
+      }
+      
+      .forecast-grid {
+        gap: 3px;
+      }
+      
+      .forecast-day {
+        padding: 4px 2px;
+      }
+      
+      .day-temp {
+        font-size: 1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Weather Forecast</h1>
+      <div class="search-container">
+        <input type="text" id="locationInput" placeholder="Enter city name..." value="London">
+        <button id="searchBtn">Search</button>
+      </div>
+      <div id="error" class="error" style="display: none;"></div>
+    </div>
+    
+    <div id="weatherContainer"></div>
+    <div id="emptyState" class="empty-state" style="display: none;">
+      <svg class="empty-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"></path>
+      </svg>
+      <p class="empty-text">Enter a location to see the weather forecast</p>
+    </div>
+  </div>
+  
+  <div id="installPrompt" class="install-prompt">
+    <span>Install this app for easy access!</span>
+    <button id="installBtn">Install</button>
+    <button id="dismissBtn">Dismiss</button>
+  </div>
+
+  <script>
+    const API_KEY = 'YOUR_OPENWEATHERMAP_API_KEY';
+    let deferredPrompt;
+    let weatherData = null;
+    let selectedDayIndex = -1; // -1 means current weather
+    
+    // Service Worker Registration
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        const swCode = `
+          const CACHE_NAME = 'weather-app-v1';
+          const urlsToCache = ['/'];
+          
+          self.addEventListener('install', event => {
+            event.waitUntil(
+              caches.open(CACHE_NAME).then(cache => cache.addAll(urlsToCache))
+            );
+          });
+          
+          self.addEventListener('fetch', event => {
+            event.respondWith(
+              caches.match(event.request).then(response => {
+                return response || fetch(event.request);
+              })
+            );
+          });
+        `;
+        
+        const blob = new Blob([swCode], { type: 'application/javascript' });
+        const swUrl = URL.createObjectURL(blob);
+        
+        navigator.serviceWorker.register(swUrl).then(registration => {
+          console.log('ServiceWorker registered');
+        }).catch(err => {
+          console.log('ServiceWorker registration failed:', err);
+        });
+      });
+    }
+    
+    // Install prompt handling
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      document.getElementById('installPrompt').classList.add('show');
+    });
+    
+    document.getElementById('installBtn').addEventListener('click', async () => {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        deferredPrompt = null;
+        document.getElementById('installPrompt').classList.remove('show');
+      }
+    });
+    
+    document.getElementById('dismissBtn').addEventListener('click', () => {
+      document.getElementById('installPrompt').classList.remove('show');
+    });
+    
+    // Weather functionality
+    const getWindDirection = (deg) => {
+      const directions = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
+      return directions[Math.round(deg / 45) % 8];
+    };
+    
+    const fetchWeather = async () => {
+      const location = document.getElementById('locationInput').value.trim();
+      const errorEl = document.getElementById('error');
+      const weatherContainer = document.getElementById('weatherContainer');
+      const emptyState = document.getElementById('emptyState');
+      
+      if (!location) {
+        errorEl.textContent = 'Please enter a location';
+        errorEl.style.display = 'inline-block';
+        return;
+      }
+      
+      errorEl.style.display = 'none';
+      selectedDayIndex = -1; // Reset to current weather
+      
+      try {
+        // Use simulated data for demo
+        weatherData = {
+          current: {
+            name: location,
+            sys: { country: 'GB' },
+            main: { temp: 12.5, humidity: 72 },
+            weather: [{ description: 'partly cloudy' }],
+            rain: { '1h': 0.2 },
+            wind: { speed: 4.3, deg: 225 }
+          },
+          forecast: [
+            { dt: Date.now() / 1000 + 86400, main: { temp: 14.2 }, rain: { '3h': 1.5 }, wind: { speed: 5.1, deg: 180 } },
+            { dt: Date.now() / 1000 + 172800, main: { temp: 11.8 }, rain: { '3h': 0 }, wind: { speed: 3.2, deg: 270 } },
+            { dt: Date.now() / 1000 + 259200, main: { temp: 13.5 }, rain: { '3h': 2.8 }, wind: { speed: 6.7, deg: 135 } },
+            { dt: Date.now() / 1000 + 345600, main: { temp: 15.1 }, rain: { '3h': 0.5 }, wind: { speed: 4.9, deg: 90 } },
+            { dt: Date.now() / 1000 + 432000, main: { temp: 16.3 }, rain: { '3h': 0 }, wind: { speed: 3.8, deg: 315 } }
+          ]
+        };
+        
+        displayWeather(weatherData);
+        emptyState.style.display = 'none';
+        
+      } catch (err) {
+        errorEl.textContent = err.message || 'Failed to fetch weather data';
+        errorEl.style.display = 'inline-block';
+        weatherContainer.innerHTML = '';
+      }
+    };
+    
+    const selectDay = (index) => {
+      selectedDayIndex = index;
+      displayWeather(weatherData);
+    };
+    
+    const drawWindGraph = (windSpeed, windDeg) => {
+      const canvas = document.createElement('canvas');
+      canvas.width = 120;
+      canvas.height = 120;
+      const ctx = canvas.getContext('2d');
+      
+      const centerX = 60;
+      const centerY = 60;
+      const radius = 45;
+      
+      // Draw circle background
+      ctx.strokeStyle = '#3b4b59';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+      ctx.stroke();
+      
+      // Draw cardinal directions
+      ctx.fillStyle = '#e1e4e1';
+      ctx.font = '10px "IBM Plex Mono"';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('N', centerX, centerY - radius - 10);
+      ctx.fillText('S', centerX, centerY + radius + 10);
+      ctx.fillText('E', centerX + radius + 10, centerY);
+      ctx.fillText('W', centerX - radius - 10, centerY);
+      
+      // Draw wind arrow
+      const angleRad = (windDeg - 90) * Math.PI / 180;
+      const arrowLength = radius * 0.7;
+      const endX = centerX + Math.cos(angleRad) * arrowLength;
+      const endY = centerY + Math.sin(angleRad) * arrowLength;
+      
+      ctx.strokeStyle = '#e1e4e1';
+      ctx.fillStyle = '#e1e4e1';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(centerX, centerY);
+      ctx.lineTo(endX, endY);
+      ctx.stroke();
+      
+      // Draw arrowhead
+      const headLen = 10;
+      const angle1 = angleRad + Math.PI / 6;
+      const angle2 = angleRad - Math.PI / 6;
+      ctx.beginPath();
+      ctx.moveTo(endX, endY);
+      ctx.lineTo(endX - headLen * Math.cos(angle1), endY - headLen * Math.sin(angle1));
+      ctx.lineTo(endX - headLen * Math.cos(angle2), endY - headLen * Math.sin(angle2));
+      ctx.closePath();
+      ctx.fill();
+      
+      // Draw speed in center
+      ctx.font = 'bold 14px "IBM Plex Mono"';
+      ctx.fillText(windSpeed.toFixed(1), centerX, centerY);
+      ctx.font = '8px "IBM Plex Mono"';
+      ctx.fillText('m/s', centerX, centerY + 12);
+      
+      return canvas.toDataURL();
+    };
+    
+    const displayWeather = (data) => {
+      const container = document.getElementById('weatherContainer');
+      
+      // Determine which day to show in detail
+      let detailData, detailLabel;
+      if (selectedDayIndex === -1) {
+        detailData = data.current;
+        detailLabel = 'Current Weather';
+      } else {
+        detailData = data.forecast[selectedDayIndex];
+        const date = new Date(detailData.dt * 1000);
+        detailLabel = date.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
+      }
+      
+      const windGraphUrl = drawWindGraph(detailData.wind.speed, detailData.wind.deg);
+      
+      const html = `
+        <div class="weather-container">
+          <div class="current-weather">
+            <div class="location">
+              <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+              </svg>
+              <h2>${data.current.name}, ${data.current.sys.country}</h2>
+            </div>
+            <div style="font-size: 0.75rem; margin-bottom: 8px; opacity: 0.9;">${detailLabel}</div>
+            
+            <div style="display: grid; grid-template-columns: 120px 1fr; gap: 12px; align-items: center;">
+              <img src="${windGraphUrl}" alt="Wind graph" style="width: 120px; height: 120px;">
+              
+              <div class="current-grid" style="grid-template-columns: repeat(2, 1fr);">
+                <div class="metric">
+                  <svg class="metric-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"></path>
+                  </svg>
+                  <div class="metric-label">Temp</div>
+                  <div class="metric-value">${Math.round(detailData.main.temp)}°C</div>
+                  ${selectedDayIndex === -1 ? `<div class="metric-sub">${detailData.weather[0].description}</div>` : ''}
+                </div>
+                
+                <div class="metric">
+                  <svg class="metric-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707"></path>
+                  </svg>
+                  <div class="metric-label">Rain</div>
+                  <div class="metric-value">${selectedDayIndex === -1 ? (detailData.rain && detailData.rain['1h'] || 0) : (detailData.rain && detailData.rain['3h'] || 0)} mm</div>
+                  ${selectedDayIndex === -1 ? `<div class="metric-sub">Hum: ${detailData.main.humidity}%</div>` : ''}
+                </div>
+                
+                <div class="metric">
+                  <div class="metric-icon" style="font-size: 16px;">↑</div>
+                  <div class="metric-label">Direction</div>
+                  <div class="metric-value">${getWindDirection(detailData.wind.deg)}</div>
+                  <div class="metric-sub">${detailData.wind.deg}°</div>
+                </div>
+                
+                <div class="metric">
+                  <svg class="metric-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                  </svg>
+                  <div class="metric-label">Speed</div>
+                  <div class="metric-value">${detailData.wind.speed} m/s</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <h3 class="forecast-header">5-Day Forecast</h3>
+          <div class="forecast-grid">
+            ${data.forecast.map(function(day, idx) {
+              const date = new Date(day.dt * 1000);
+              const rain = (day.rain && day.rain['3h']) || (day.snow && day.snow['3h']) || 0;
+              const isSelected = idx === selectedDayIndex;
+              return `
+                <div class="forecast-day" onclick="selectDay(${idx})" style="cursor: pointer; ${isSelected ? 'outline: 2px solid #e1e4e1; outline-offset: -2px;' : ''}">
+                  <div class="day-name">${date.toLocaleDateString('en-US', { weekday: 'short' })}</div>
+                  <div class="day-date">${date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</div>
+                  <div class="day-temp">${Math.round(day.main.temp)}°</div>
+                  <div class="day-detail">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707"></path>
+                    </svg>
+                    <span>${rain}mm</span>
+                  </div>
+                  <div class="day-detail">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                    </svg>
+                    <span>${day.wind.speed}m/s ${getWindDirection(day.wind.deg)}</span>
+                  </div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      `;
+      
+      container.innerHTML = html;
+    };
+    
+    // Event listeners
+    document.getElementById('searchBtn').addEventListener('click', fetchWeather);
+    document.getElementById('locationInput').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') fetchWeather();
+    });
+    
+    // Load on start
+    fetchWeather();
+  </script>
+</body>
+</html>
