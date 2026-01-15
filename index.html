@@ -37,7 +37,7 @@
     
     .header {
       text-align: center;
-      margin-bottom: 8px;
+      margin-bottom: 12px;
       flex-shrink: 0;
     }
     
@@ -45,13 +45,6 @@
       font-size: 1.5rem;
       font-weight: 700;
       margin-bottom: 8px;
-    }
-    
-    .search-container {
-      display: flex;
-      gap: 4px;
-      max-width: 500px;
-      margin: 0 auto;
     }
     
     input {
@@ -76,7 +69,7 @@
     
     button {
       padding: 8px 16px;
-      background-color: #4a5a69;
+      background-color: #556575;
       color: #e1e4e1;
       border: none;
       border-radius: 6px;
@@ -114,6 +107,7 @@
       display: flex;
       flex-direction: column;
       min-height: 0;
+      margin-bottom: 8px;
     }
     
     .current-weather {
@@ -128,12 +122,47 @@
       display: flex;
       align-items: center;
       gap: 6px;
-      margin-bottom: 8px;
+      margin-bottom: 4px;
     }
     
     .location h2 {
       font-size: 1rem;
       font-weight: 700;
+    }
+    
+    .conditions-banner {
+      padding: 16px 12px;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: 12px;
+      flex-shrink: 0;
+    }
+    
+    .conditions-great {
+      background-color: #2d5f2d;
+      color: #90ee90;
+    }
+    
+    .conditions-good {
+      background-color: #4a5f2d;
+      color: #c8e690;
+    }
+    
+    .conditions-reasonable {
+      background-color: #5f5f2d;
+      color: #ffff90;
+    }
+    
+    .conditions-marginal {
+      background-color: #5f3d2d;
+      color: #ffb380;
+    }
+    
+    .conditions-bad {
+      background-color: #5f2d2d;
+      color: #ff9090;
     }
     
     .current-grid {
@@ -253,6 +282,7 @@
       align-items: center;
       gap: 16px;
       max-width: 90%;
+      z-index: 1000;
     }
     
     .install-prompt.show {
@@ -299,20 +329,17 @@
 <body>
   <div class="container">
     <div class="header">
-      <h1>Can I row today?</h1>
-      <div class="search-container">
-        <input type="text" id="locationInput" placeholder="Going somewhere else?" value="Keswick">
-        <button id="searchBtn">Search</button>
-      </div>
-      <div id="error" class="error" style="display: none;"></div>
+      <h1>Lakeland RC</h1>
     </div>
+    
+    <div id="conditionsBanner"></div>
     
     <div id="weatherContainer"></div>
     <div id="emptyState" class="empty-state" style="display: none;">
       <svg class="empty-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"></path>
       </svg>
-      <p class="empty-text">Enter alternative location</p>
+      <p class="empty-text">Loading weather...</p>
     </div>
   </div>
   
@@ -382,24 +409,58 @@
     });
     
     // Weather functionality
+    const mpsToMph = (mps) => {
+      return mps * 2.23694;
+    };
+    
     const getWindDirection = (deg) => {
       const directions = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
       return directions[Math.round(deg / 45) % 8];
     };
     
+    const getConditions = (windSpeedMph, windDeg) => {
+      let condition, conditionClass, location;
+      
+      // Determine condition based on wind speed
+      if (windSpeedMph < 5) {
+        condition = 'great conditions';
+        conditionClass = 'conditions-great';
+      } else if (windSpeedMph < 10) {
+        condition = 'good conditions';
+        conditionClass = 'conditions-good';
+      } else if (windSpeedMph < 15) {
+        condition = 'reasonable';
+        conditionClass = 'conditions-reasonable';
+      } else if (windSpeedMph < 20) {
+        condition = 'marginal';
+        conditionClass = 'conditions-marginal';
+      } else {
+        condition = 'bad';
+        conditionClass = 'conditions-bad';
+      }
+      
+      // Determine location based on wind direction
+      const direction = getWindDirection(windDeg);
+      if (direction === 'E' || direction === 'NE' || direction === 'SE') {
+        location = 'Ashness';
+      } else if (direction === 'W' || direction === 'NW' || direction === 'SW') {
+        location = 'Lingholme';
+      } else if (direction === 'S') {
+        location = 'bay';
+      } else {
+        location = "anyone's guess";
+      }
+      
+      return { condition, conditionClass, location };
+    };
+    
     const fetchWeather = async () => {
-      const location = document.getElementById('locationInput').value.trim();
+      const location = 'Keswick';
       const errorEl = document.getElementById('error');
       const weatherContainer = document.getElementById('weatherContainer');
       const emptyState = document.getElementById('emptyState');
+      const conditionsBanner = document.getElementById('conditionsBanner');
       
-      if (!location) {
-        errorEl.textContent = 'Please enter a location';
-        errorEl.style.display = 'inline-block';
-        return;
-      }
-      
-      errorEl.style.display = 'none';
       selectedDayIndex = -1; // Reset to current weather
       
       try {
@@ -426,8 +487,7 @@
         emptyState.style.display = 'none';
         
       } catch (err) {
-        errorEl.textContent = err.message || 'Failed to fetch weather data';
-        errorEl.style.display = 'inline-block';
+        conditionsBanner.innerHTML = '';
         weatherContainer.innerHTML = '';
       }
     };
@@ -437,7 +497,7 @@
       displayWeather(weatherData);
     };
     
-    const drawWindGraph = (windSpeed, windDeg) => {
+    const drawWindGraph = (windSpeedMph, windDeg) => {
       const canvas = document.createElement('canvas');
       canvas.width = 120;
       canvas.height = 120;
@@ -489,17 +549,12 @@
       ctx.closePath();
       ctx.fill();
       
-      // Draw speed in center
-      ctx.font = 'bold 14px "IBM Plex Mono"';
-      ctx.fillText(windSpeed.toFixed(1), centerX, centerY);
-      ctx.font = '10px "IBM Plex Mono"';
-      ctx.fillText('m/s', centerX, centerY + 12);
-      
       return canvas.toDataURL();
     };
     
     const displayWeather = (data) => {
       const container = document.getElementById('weatherContainer');
+      const conditionsBanner = document.getElementById('conditionsBanner');
       
       // Determine which day to show in detail
       let detailData, detailLabel;
@@ -512,7 +567,16 @@
         detailLabel = date.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
       }
       
-      const windGraphUrl = drawWindGraph(detailData.wind.speed, detailData.wind.deg);
+      const windSpeedMph = mpsToMph(detailData.wind.speed);
+      const { condition, conditionClass, location } = getConditions(windSpeedMph, detailData.wind.deg);
+      const windGraphUrl = drawWindGraph(windSpeedMph, detailData.wind.deg);
+      
+      // Update conditions banner
+      conditionsBanner.innerHTML = `
+        <div class="conditions-banner ${conditionClass}">
+          ${condition.toUpperCase()} - Try ${location}
+        </div>
+      `;
       
       const html = `
         <div class="weather-container">
@@ -560,7 +624,7 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
                   </svg>
                   <div class="metric-label">Speed</div>
-                  <div class="metric-value">${detailData.wind.speed} m/s</div>
+                  <div class="metric-value">${windSpeedMph.toFixed(1)} mph</div>
                 </div>
               </div>
             </div>
@@ -572,6 +636,7 @@
               const date = new Date(day.dt * 1000);
               const rain = (day.rain && day.rain['3h']) || (day.snow && day.snow['3h']) || 0;
               const isSelected = idx === selectedDayIndex;
+              const dayWindMph = mpsToMph(day.wind.speed);
               return `
                 <div class="forecast-day" onclick="selectDay(${idx})" style="cursor: pointer; ${isSelected ? 'outline: 2px solid #e1e4e1; outline-offset: -2px;' : ''}">
                   <div class="day-name">${date.toLocaleDateString('en-US', { weekday: 'short' })}</div>
@@ -587,7 +652,7 @@
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
                     </svg>
-                    <span>${day.wind.speed}m/s ${getWindDirection(day.wind.deg)}</span>
+                    <span>${dayWindMph.toFixed(1)}mph ${getWindDirection(day.wind.deg)}</span>
                   </div>
                 </div>
               `;
@@ -598,12 +663,6 @@
       
       container.innerHTML = html;
     };
-    
-    // Event listeners
-    document.getElementById('searchBtn').addEventListener('click', fetchWeather);
-    document.getElementById('locationInput').addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') fetchWeather();
-    });
     
     // Load on start
     fetchWeather();
