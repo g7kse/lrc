@@ -5,3 +5,5 @@
 This is a basic PWA to pick up Keswick weather from OWM and display it on a device
 
 This is a basic PWA to pick up Keswick weather from OWM and display it on a device. It predicts likely rowing based on wind speed and direction on Derwentwater. Its not going to solve the decision for you but it will help
+
+For now it is deployed via Netlify as [LRCRowing](https://lrc.netlify.app)

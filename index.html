@@ -329,7 +329,7 @@
 <body>
   <div class="container">
     <div class="header">
-      <h1>Lakeland RC</h1>
+      <h1>Lakeland Rowing Club</h1>
     </div>
     
     <div id="conditionsBanner"></div>
@@ -425,13 +425,13 @@
       if (windSpeedMph < 5) {
         condition = 'great conditions';
         conditionClass = 'conditions-great';
-      } else if (windSpeedMph < 10) {
+      } else if (windSpeedMph < 8) {
         condition = 'good conditions';
         conditionClass = 'conditions-good';
-      } else if (windSpeedMph < 15) {
+      } else if (windSpeedMph < 12) {
         condition = 'reasonable';
         conditionClass = 'conditions-reasonable';
-      } else if (windSpeedMph < 20) {
+      } else if (windSpeedMph < 18) {
         condition = 'marginal';
         conditionClass = 'conditions-marginal';
       } else {
@@ -446,9 +446,9 @@
       } else if (direction === 'W' || direction === 'NW' || direction === 'SW') {
         location = 'Lingholme';
       } else if (direction === 'S') {
-        location = 'The bay';
+        location = 'The Bay';
       } else {
-        location = "Anyone's guess";
+        location = "Its up to you";
       }
       
       return { condition, conditionClass, location };
@@ -574,7 +574,7 @@
       // Update conditions banner
       conditionsBanner.innerHTML = `
         <div class="conditions-banner ${conditionClass}">
-          ${condition.toUpperCase()} - Try ${location}
+          ${condition.toUpperCase()} - Suggest ${location}
         </div>
       `;
       
