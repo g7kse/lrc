@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#3b4b59">
-  <meta name="description" content="5-Day Weather Forecast App">
-  <title>Can I go rowing?</title>
+  <meta name="description" content="Derwentwater Weather Forecast App">
+  <title>Lakeland Rowing?</title>
   <link rel="manifest" href="/manifest.json">
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
@@ -301,7 +301,7 @@
     <div class="header">
       <h1>Can I row today?</h1>
       <div class="search-container">
-        <input type="text" id="locationInput" placeholder="Going somewhere else?..." value="Keswick">
+        <input type="text" id="locationInput" placeholder="Going somewhere else?" value="Keswick">
         <button id="searchBtn">Search</button>
       </div>
       <div id="error" class="error" style="display: none;"></div>
@@ -322,7 +322,7 @@
     <button id="dismissBtn">Dismiss</button>
   </div>
 
-  <script>
+ <script>
     const API_KEY = 'YOUR_OPENWEATHERMAP_API_KEY';
     let deferredPrompt;
     let weatherData = null;
@@ -492,7 +492,7 @@
       // Draw speed in center
       ctx.font = 'bold 14px "IBM Plex Mono"';
       ctx.fillText(windSpeed.toFixed(1), centerX, centerY);
-      ctx.font = '8px "IBM Plex Mono"';
+      ctx.font = '10px "IBM Plex Mono"';
       ctx.fillText('m/s', centerX, centerY + 12);
       
       return canvas.toDataURL();
