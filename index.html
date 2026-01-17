@@ -17,7 +17,7 @@
     
     body {
       font-family: 'IBM Plex Mono', monospace;
-      background-color: #aac6d2ff;
+      background-color: #12437bff;
       color: #e1e4e1;
       height: 100vh;
       overflow: hidden;
@@ -41,6 +41,13 @@
       flex-shrink: 0;
     }
     
+    .logo {
+      width: 80px;
+      height: auto;
+      margin: 0 auto 8px;
+      display: block;
+    }
+    
     h1 {
       font-size: 1.5rem;
       font-weight: 700;
@@ -52,7 +59,7 @@
       padding: 8px 12px;
       border-radius: 6px;
       border: 1px solid #4a5a69;
-      background-color: #2a3540;
+      background-color: #aac6d2ff;
       color: #e1e4e1;
       font-family: 'IBM Plex Mono', monospace;
       font-size: 0.875rem;
@@ -69,8 +76,8 @@
     
     button {
       padding: 8px 16px;
-      background-color: #556575;
-      color: #e1e4e1;
+      background-color: #aac6d2ff;
+      color: #050505;
       border: none;
       border-radius: 6px;
       font-family: 'IBM Plex Mono', monospace;
@@ -99,7 +106,7 @@
     }
     
     .weather-container {
-      background-color: #4a5a69;
+      background-color: #aac6d2ff;
       border-radius: 12px;
       padding: 12px;
       box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
@@ -111,7 +118,8 @@
     }
     
     .current-weather {
-      background-color: #556575;
+      background-color: #aac6d2ff;
+      color: #000000;
       border-radius: 8px;
       padding: 12px;
       margin-bottom: 12px;
@@ -200,6 +208,7 @@
     
     .forecast-header {
       font-size: 0.875rem;
+      color: #000000;
       font-weight: 700;
       margin-bottom: 8px;
       flex-shrink: 0;
@@ -214,7 +223,7 @@
     }
     
     .forecast-day {
-      background-color: #556575;
+      background-color: #12437bff;
       border-radius: 6px;
       padding: 6px 4px;
       text-align: center;
@@ -294,6 +303,10 @@
     }
     
     @media (max-width: 768px) {
+      .logo {
+        width: 60px;
+      }
+      
       h1 {
         font-size: 1.25rem;
       }
@@ -329,6 +342,7 @@
 <body>
   <div class="container">
     <div class="header">
+      <img src="/icons/lrc_logo.png" alt="Lakeland Rowing Club Logo" class="logo">
       <h1>Lakeland Rowing Club</h1>
     </div>
     
@@ -425,13 +439,13 @@
       if (windSpeedMph < 5) {
         condition = 'great';
         conditionClass = 'conditions-great';
-      } else if (windSpeedMph < 8) {
+      } else if (windSpeedMph < 12) {
         condition = 'good';
         conditionClass = 'conditions-good';
-      } else if (windSpeedMph < 12) {
+      } else if (windSpeedMph < 18) {
         condition = 'reasonable';
         conditionClass = 'conditions-reasonable';
-      } else if (windSpeedMph < 18) {
+      } else if (windSpeedMph < 25) {
         condition = 'marginal';
         conditionClass = 'conditions-marginal';
       } else {
@@ -508,14 +522,14 @@
       const radius = 45;
       
       // Draw circle background
-      ctx.strokeStyle = '#3b4b59';
+      ctx.strokeStyle = '#000000';
       ctx.lineWidth = 2;
       ctx.beginPath();
       ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
       ctx.stroke();
       
       // Draw cardinal directions
-      ctx.fillStyle = '#e1e4e1';
+      ctx.fillStyle = '#000000';
       ctx.font = '10px "IBM Plex Mono"';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
@@ -530,8 +544,8 @@
       const endX = centerX + Math.cos(angleRad) * arrowLength;
       const endY = centerY + Math.sin(angleRad) * arrowLength;
       
-      ctx.strokeStyle = '#e1e4e1';
-      ctx.fillStyle = '#e1e4e1';
+      ctx.strokeStyle = '#000000';
+      ctx.fillStyle = '#000000';
       ctx.lineWidth = 3;
       ctx.beginPath();
       ctx.moveTo(centerX, centerY);
@@ -613,7 +627,7 @@
                 </div>
                 
                 <div class="metric">
-                  <div class="metric-icon" style="font-size: 16px;">↑</div>
+                  <div class="metric-icon" style="font-size: 16px; color: #000000;">→</div>
                   <div class="metric-label">Direction</div>
                   <div class="metric-value">${getWindDirection(detailData.wind.deg)}</div>
                   <div class="metric-sub">${detailData.wind.deg}°</div>
