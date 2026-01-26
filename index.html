@@ -364,6 +364,7 @@
     let deferredPrompt;
     let weatherData = null;
     let selectedDayIndex = -1; // -1 means current weather
+    let showForecasts = true;
     
     // Weather functionality
     const mpsToMph = (mps) => {
@@ -513,10 +514,11 @@
       const { condition, conditionClass, location } = getConditions(windGustMph, detailData.wind.deg);
       const windGraphUrl = drawWindGraph(windSpeedMph, detailData.wind.deg);
       
-      // Update conditions banner (hide recommendation/suggestion to save space)
+      // Update conditions banner with toggle
       conditionsBanner.innerHTML = `
-        <div class="conditions-banner ${conditionClass}">
-          ${condition.toUpperCase()}
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+          <div class="conditions-banner ${conditionClass}" style="flex:1;">${condition.toUpperCase()}</div>
+          <button id="toggleForecastsBtn" style="padding:6px 8px;font-size:0.8rem;margin-left:8px;">${showForecasts ? 'Hide Forecasts' : 'Show Forecasts'}</button>
         </div>
       `;
       
@@ -572,13 +574,13 @@
             </div>
           </div>
           
-          <h3 class="forecast-header">Hourly</h3>
-          <div style="margin-top:8px;">
-            <canvas id="hourlyChart" height="240" style="width:100%;height:240px;display:block;background:rgba(255,255,255,0.02);"></canvas>
-          </div>
+          <div id="forecastsWrapper" style="display: ${showForecasts ? 'block' : 'none'};">
+            <div style="margin-top:8px;">
+              <canvas id="hourlyChart" height="240" style="width:100%;height:240px;display:block;background:rgba(255,255,255,0.02);"></canvas>
+            </div>
 
-          <h3 class="forecast-header">5-Day Forecast</h3>
-          <div class="forecast-grid">
+            <h3 class="forecast-header">5-Day Forecast</h3>
+            <div class="forecast-grid">
             ${data.forecast.map(function(day, idx) {
               const date = new Date(day.dt * 1000);
               const rain = (day.rain && day.rain['3h']) || (day.snow && day.snow['3h']) || 0;
@@ -617,6 +619,18 @@
       } catch (e) {
         console.warn('Hourly chart render failed', e);
       }
+
+      // Attach toggle handler for forecasts
+      (function(){
+        const btn = document.getElementById('toggleForecastsBtn');
+        const wrapper = document.getElementById('forecastsWrapper');
+        if (!btn || !wrapper) return;
+        btn.addEventListener('click', () => {
+          showForecasts = !showForecasts;
+          wrapper.style.display = showForecasts ? 'block' : 'none';
+          btn.textContent = showForecasts ? 'Hide Forecasts' : 'Show Forecasts';
+        });
+      })();
     };
 
     const renderHourlyChart = (hourly) => {
