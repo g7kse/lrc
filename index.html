@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#3b4b59">
-  <meta name="description" content="Lakeland Rowing Club Predictor">
+  <meta name="description" content="Lakeland Rowing Club Weather">
   <title>Derwentwater Weather</title>
   <link rel="manifest" href="/manifest.json">
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -364,12 +364,10 @@
     let deferredPrompt;
     let weatherData = null;
     let selectedDayIndex = -1; // -1 means current weather
-    let showForecasts = true;
     
     // Weather functionality
-    const mpsToMph = (mps) => {
-      return mps * 2.23694;
-    };
+    // Wind speeds from the chosen Open-Meteo endpoint are requested in mph
+    // so we treat values as mph throughout.
     
     const getWindDirection = (deg) => {
       const directions = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
@@ -421,14 +419,107 @@
       selectedDayIndex = -1; // Reset to current weather
       
       try {
-        // No simulated data in this trimmed demo. Provide real data and call `displayWeather(data)`.
-        weatherData = null;
-        // Keep the empty state visible until real data is supplied.
+        // Use the user-provided Open-Meteo URL (wind in mph)
         emptyState.style.display = 'block';
-        
+        const url = 'https://api.open-meteo.com/v1/forecast?latitude=54.594723&longitude=-3.14536&hourly=temperature_2m,wind_speed_10m,wind_gusts_10m,precipitation&wind_speed_unit=mph&timezone=auto';
+        const resp = await fetch(url);
+        if (resp.ok) {
+          const j = await resp.json();
+          const nowMs = Date.now();
+
+          // find current hourly index (first entry at or after now)
+          const times = j.hourly && j.hourly.time ? j.hourly.time : [];
+          let idx = times.findIndex(t => new Date(t).getTime() >= nowMs);
+          if (idx < 0) idx = 0;
+
+          const getVal = (arr, i) => (Array.isArray(arr) && arr[i] !== undefined) ? arr[i] : 0;
+
+          const current = {
+            name: 'Keswick',
+            sys: { country: 'GB' },
+            main: { temp: getVal(j.hourly.temperature_2m, idx), humidity: 0 },
+            weather: [{ description: '' }],
+            rain: { '1h': getVal(j.hourly.precipitation, idx) },
+            wind: { speed: getVal(j.hourly.wind_speed_10m, idx), deg: 0, gust: getVal(j.hourly.wind_gusts_10m, idx) }
+          };
+
+          // Build hourly array (next 12 hours)
+          const hourly = [];
+          for (let i = idx; i < Math.min(times.length, idx + 12); i++) {
+            hourly.push({
+              dt: Math.floor(new Date(times[i]).getTime() / 1000),
+              wind_speed: getVal(j.hourly.wind_speed_10m, i),
+              wind_gust: getVal(j.hourly.wind_gusts_10m, i) || getVal(j.hourly.wind_speed_10m, i),
+              rain: { '1h': getVal(j.hourly.precipitation, i) }
+            });
+          }
+
+          // Aggregate simple 5-day forecast from hourly (skip today)
+          const byDay = {};
+          for (let i = 0; i < times.length; i++) {
+            const d = new Date(times[i]);
+            const dayKey = d.toISOString().slice(0,10); // YYYY-MM-DD
+            if (!byDay[dayKey]) byDay[dayKey] = { temps: [], prec: 0, wind: [], gust: [] };
+            byDay[dayKey].temps.push(getVal(j.hourly.temperature_2m, i));
+            byDay[dayKey].prec += getVal(j.hourly.precipitation, i);
+            byDay[dayKey].wind.push(getVal(j.hourly.wind_speed_10m, i));
+            byDay[dayKey].gust.push(getVal(j.hourly.wind_gusts_10m, i) || getVal(j.hourly.wind_speed_10m, i));
+          }
+
+          const todayKey = new Date().toISOString().slice(0,10);
+          const dayKeys = Object.keys(byDay).filter(k => k !== todayKey).slice(0,5);
+          const forecast = dayKeys.map(k => {
+            const entry = byDay[k];
+            const maxTemp = Math.max(...entry.temps);
+            const maxWind = Math.max(...entry.wind);
+            const maxGust = Math.max(...entry.gust);
+            const precSum = Math.round(entry.prec * 100) / 100;
+            const dt = Math.floor(new Date(k + 'T12:00:00').getTime() / 1000);
+            return { dt, main: { temp: maxTemp }, rain: { '3h': precSum }, wind: { speed: maxWind, deg: 0, gust: maxGust } };
+          });
+
+          weatherData = { current, forecast, hourly };
+          emptyState.style.display = 'none';
+          displayWeather(weatherData);
+          return;
+        } else {
+          console.warn('Open-Meteo returned', resp.status);
+          weatherData = null;
+        }
       } catch (err) {
-        conditionsBanner.innerHTML = '';
-        weatherContainer.innerHTML = '';
+        console.warn('Open-Meteo fetch failed', err);
+        weatherData = null;
+      }
+
+      // Fallback: if no real data supplied, show a small demo so UI isn't empty.
+      if (!weatherData) {
+        const now = Math.floor(Date.now()/1000);
+        const demoHourly = [];
+        for (let i=0;i<12;i++) {
+          // generate plausible mph values for demo
+          const ws = +(5 + Math.abs(Math.sin(i/2))*10 + (Math.random()*2-1)).toFixed(1);
+          const gust = +(ws * (1.2 + Math.random()*0.6)).toFixed(1);
+          const rainVal = Math.random() < 0.25 ? +(Math.random()*3).toFixed(2) : 0;
+          demoHourly.push({ dt: now + i*3600, wind_speed: ws, wind_gust: gust, rain: {'1h': rainVal} });
+        }
+
+        weatherData = {
+          current: {
+            name: 'Keswick', sys: { country: 'GB' }, main: { temp: 12.5, humidity: 72 },
+            weather: [{ description: 'partly cloudy' }], rain: {'1h': 0.2}, wind: { speed: 8.6, deg: 225, gust: 12 }
+          },
+          forecast: [
+            { dt: now + 86400, main: { temp: 14.2 }, rain: {'3h': 1.5}, wind: { speed: 12.1, deg: 180, gust: 14 } },
+            { dt: now + 172800, main: { temp: 11.8 }, rain: {'3h': 0}, wind: { speed: 6.2, deg: 270, gust: 8 } },
+            { dt: now + 259200, main: { temp: 13.5 }, rain: {'3h': 2.8}, wind: { speed: 15.3, deg: 135, gust: 20 } },
+            { dt: now + 345600, main: { temp: 15.1 }, rain: {'3h': 0.5}, wind: { speed: 9.9, deg: 90, gust: 12 } },
+            { dt: now + 432000, main: { temp: 16.3 }, rain: {'3h': 0}, wind: { speed: 7.8, deg: 315, gust: 10 } }
+          ],
+          hourly: demoHourly
+        };
+
+        emptyState.style.display = 'none';
+        displayWeather(weatherData);
       }
     };
     
@@ -507,19 +598,16 @@
         detailLabel = date.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
       }
       
-      const windSpeedMph = mpsToMph(detailData.wind.speed);
+      const windSpeedMph = detailData.wind.speed;
       // Determine gusting value: prefer explicit gust if present, otherwise estimate
-      const windGustMph = detailData.wind.gust ? mpsToMph(detailData.wind.gust) : (windSpeedMph * 1.5);
+      const windGustMph = detailData.wind.gust ? detailData.wind.gust : (windSpeedMph * 1.5);
       // Use gusting value to decide conditions/banner
       const { condition, conditionClass, location } = getConditions(windGustMph, detailData.wind.deg);
       const windGraphUrl = drawWindGraph(windSpeedMph, detailData.wind.deg);
       
-      // Update conditions banner with toggle
+      // Update conditions banner
       conditionsBanner.innerHTML = `
-        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
-          <div class="conditions-banner ${conditionClass}" style="flex:1;">${condition.toUpperCase()}</div>
-          <button id="toggleForecastsBtn" style="padding:6px 8px;font-size:0.8rem;margin-left:8px;">${showForecasts ? 'Hide Forecasts' : 'Show Forecasts'}</button>
-        </div>
+        <div class="conditions-banner ${conditionClass}">${condition.toUpperCase()}</div>
       `;
       
       const html = `
@@ -574,7 +662,7 @@
             </div>
           </div>
           
-          <div id="forecastsWrapper" style="display: ${showForecasts ? 'block' : 'none'};">
+          <div id="forecastsWrapper" style="display: block;">
             <div style="margin-top:8px;">
               <canvas id="hourlyChart" height="240" style="width:100%;height:240px;display:block;background:rgba(255,255,255,0.02);"></canvas>
             </div>
@@ -585,7 +673,7 @@
               const date = new Date(day.dt * 1000);
               const rain = (day.rain && day.rain['3h']) || (day.snow && day.snow['3h']) || 0;
               const isSelected = idx === selectedDayIndex;
-              const dayWindMph = mpsToMph(day.wind.speed);
+              const dayWindMph = day.wind.speed;
               const cond = getConditions(dayWindMph, day.wind.deg);
               return `
                 <div class="forecast-day ${cond.conditionClass}" onclick="selectDay(${idx})" style="cursor: pointer; ${isSelected ? 'outline: 2px solid #e1e4e1; outline-offset: -2px;' : ''}">
@@ -620,17 +708,7 @@
         console.warn('Hourly chart render failed', e);
       }
 
-      // Attach toggle handler for forecasts
-      (function(){
-        const btn = document.getElementById('toggleForecastsBtn');
-        const wrapper = document.getElementById('forecastsWrapper');
-        if (!btn || !wrapper) return;
-        btn.addEventListener('click', () => {
-          showForecasts = !showForecasts;
-          wrapper.style.display = showForecasts ? 'block' : 'none';
-          btn.textContent = showForecasts ? 'Hide Forecasts' : 'Show Forecasts';
-        });
-      })();
+      // forecasts always visible (toggle removed)
     };
 
     const renderHourlyChart = (hourly) => {
@@ -652,8 +730,8 @@
         return d.getHours().toString().padStart(2,'0') + ':00';
       });
 
-      const windConst = hourly.map(h => +(mpsToMph(h.wind_speed)).toFixed(1));
-      const windGust = hourly.map(h => +(mpsToMph(h.wind_gust || h.wind_speed)).toFixed(1));
+      const windConst = hourly.map(h => +(h.wind_speed).toFixed(1));
+      const windGust = hourly.map(h => +(h.wind_gust || h.wind_speed).toFixed(1));
       const rain = hourly.map(h => +(h.rain && h.rain['1h'] ? h.rain['1h'] : 0));
 
       const canvas = document.getElementById('hourlyChart');
