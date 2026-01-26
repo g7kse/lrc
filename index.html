@@ -357,70 +357,16 @@
     </div>
   </div>
   
-  <div id="installPrompt" class="install-prompt">
-    <span>Install this app for easy access!</span>
-    <button id="installBtn">Install</button>
-    <button id="dismissBtn">Dismiss</button>
-  </div>
+  <!-- Chart.js and annotation plugin -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.3.0/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@2.1.1/dist/chartjs-plugin-annotation.min.js"></script>
 
  <script>
-    const API_KEY = 'YOUR_OPENWEATHERMAP_API_KEY';
     let deferredPrompt;
     let weatherData = null;
     let selectedDayIndex = -1; // -1 means current weather
     
-    // Service Worker Registration
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        const swCode = `
-          const CACHE_NAME = 'weather-app-v1';
-          const urlsToCache = ['/'];
-          
-          self.addEventListener('install', event => {
-            event.waitUntil(
-              caches.open(CACHE_NAME).then(cache => cache.addAll(urlsToCache))
-            );
-          });
-          
-          self.addEventListener('fetch', event => {
-            event.respondWith(
-              caches.match(event.request).then(response => {
-                return response || fetch(event.request);
-              })
-            );
-          });
-        `;
-        
-        const blob = new Blob([swCode], { type: 'application/javascript' });
-        const swUrl = URL.createObjectURL(blob);
-        
-        navigator.serviceWorker.register(swUrl).then(registration => {
-          console.log('ServiceWorker registered');
-        }).catch(err => {
-          console.log('ServiceWorker registration failed:', err);
-        });
-      });
-    }
-    
-    // Install prompt handling
-    window.addEventListener('beforeinstallprompt', (e) => {
-      e.preventDefault();
-      deferredPrompt = e;
-      document.getElementById('installPrompt').classList.add('show');
-    });
-    
-    document.getElementById('installBtn').addEventListener('click', async () => {
-      if (deferredPrompt) {
-        deferredPrompt.prompt();
-        const { outcome } = await deferredPrompt.userChoice;
-        deferredPrompt = null;
-        document.getElementById('installPrompt').classList.remove('show');
-      }
-    });
-    
-    document.getElementById('dismissBtn').addEventListener('click', () => {
-      document.getElementById('installPrompt').classList.remove('show');
-    });
+    // Lightweight demo: no service worker or install prompt
     
     // Weather functionality
     const mpsToMph = (mps) => {
@@ -439,13 +385,13 @@
       if (windSpeedMph < 5) {
         condition = 'great';
         conditionClass = 'conditions-great';
-      } else if (windSpeedMph < 12) {
+      } else if (windSpeedMph < 10) {
         condition = 'good';
         conditionClass = 'conditions-good';
-      } else if (windSpeedMph < 18) {
+      } else if (windSpeedMph < 15) {
         condition = 'reasonable';
         conditionClass = 'conditions-reasonable';
-      } else if (windSpeedMph < 25) {
+      } else if (windSpeedMph < 20) {
         condition = 'marginal';
         conditionClass = 'conditions-marginal';
       } else {
@@ -469,7 +415,6 @@
     };
     
     const fetchWeather = async () => {
-      const location = 'Keswick';
       const errorEl = document.getElementById('error');
       const weatherContainer = document.getElementById('weatherContainer');
       const emptyState = document.getElementById('emptyState');
@@ -478,10 +423,10 @@
       selectedDayIndex = -1; // Reset to current weather
       
       try {
-        // Use simulated data for demo
+        // Simulated data for Keswick, GB
         weatherData = {
           current: {
-            name: location,
+            name: 'Keswick',
             sys: { country: 'GB' },
             main: { temp: 12.5, humidity: 72 },
             weather: [{ description: 'partly cloudy' }],
@@ -494,7 +439,19 @@
             { dt: Date.now() / 1000 + 259200, main: { temp: 13.5 }, rain: { '3h': 2.8 }, wind: { speed: 6.7, deg: 135 } },
             { dt: Date.now() / 1000 + 345600, main: { temp: 15.1 }, rain: { '3h': 0.5 }, wind: { speed: 4.9, deg: 90 } },
             { dt: Date.now() / 1000 + 432000, main: { temp: 16.3 }, rain: { '3h': 0 }, wind: { speed: 3.8, deg: 315 } }
-          ]
+          ],
+          hourly: (function(){
+            const arr = [];
+            const now = Math.floor(Date.now()/1000);
+            const base = 4.3; // m/s base
+            for (let i = 0; i < 24; i++) {
+              const ws = Math.max(0, base + Math.sin(i/3) * 1.5 + (Math.random()-0.5) * 1.2);
+              const gust = ws * (1 + 0.2 + Math.random() * 0.8);
+              const rainVal = Math.random() < 0.25 ? +(Math.random() * 3).toFixed(2) : 0;
+              arr.push({ dt: now + i * 3600, wind_speed: ws, wind_gust: gust, rain: { '1h': rainVal } });
+            }
+            return arr;
+          })()
         };
         
         displayWeather(weatherData);
@@ -582,7 +539,10 @@
       }
       
       const windSpeedMph = mpsToMph(detailData.wind.speed);
-      const { condition, conditionClass, location } = getConditions(windSpeedMph, detailData.wind.deg);
+      // Determine gusting value: prefer explicit gust if present, otherwise estimate
+      const windGustMph = detailData.wind.gust ? mpsToMph(detailData.wind.gust) : (windSpeedMph * 1.5);
+      // Use gusting value to decide conditions/banner
+      const { condition, conditionClass, location } = getConditions(windGustMph, detailData.wind.deg);
       const windGraphUrl = drawWindGraph(windSpeedMph, detailData.wind.deg);
       
       // Update conditions banner
@@ -600,7 +560,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
               </svg>
-              <h2>${data.current.name}, ${data.current.sys.country}</h2>
+              <h2>Keswick, GB</h2>
             </div>
             <div style="font-size: 0.75rem; margin-bottom: 8px; opacity: 0.9;">${detailLabel}</div>
             
@@ -644,6 +604,11 @@
             </div>
           </div>
           
+          <h3 class="forecast-header">Hourly</h3>
+          <div style="margin-top:8px;">
+            <canvas id="hourlyChart" height="240" style="width:100%;height:240px;display:block;background:rgba(255,255,255,0.02);"></canvas>
+          </div>
+
           <h3 class="forecast-header">5-Day Forecast</h3>
           <div class="forecast-grid">
             ${data.forecast.map(function(day, idx) {
@@ -651,8 +616,9 @@
               const rain = (day.rain && day.rain['3h']) || (day.snow && day.snow['3h']) || 0;
               const isSelected = idx === selectedDayIndex;
               const dayWindMph = mpsToMph(day.wind.speed);
+              const cond = getConditions(dayWindMph, day.wind.deg);
               return `
-                <div class="forecast-day" onclick="selectDay(${idx})" style="cursor: pointer; ${isSelected ? 'outline: 2px solid #e1e4e1; outline-offset: -2px;' : ''}">
+                <div class="forecast-day ${cond.conditionClass}" onclick="selectDay(${idx})" style="cursor: pointer; ${isSelected ? 'outline: 2px solid #e1e4e1; outline-offset: -2px;' : ''}">
                   <div class="day-name">${date.toLocaleDateString('en-US', { weekday: 'short' })}</div>
                   <div class="day-date">${date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</div>
                   <div class="day-temp">${Math.round(day.main.temp)}°</div>
@@ -672,10 +638,137 @@
               `;
             }).join('')}
           </div>
+
         </div>
       `;
       
       container.innerHTML = html;
+      // Render hourly chart if hourly data available
+      try {
+        if (data.hourly && data.hourly.length) renderHourlyChart(data.hourly);
+      } catch (e) {
+        console.warn('Hourly chart render failed', e);
+      }
+    };
+
+    const renderHourlyChart = (hourly) => {
+      // Ensure Chart is available
+      if (typeof Chart === 'undefined') {
+        const parent = document.getElementById('hourlyChart')?.parentElement;
+        if (parent) parent.innerHTML = '<div style="color:#fff;padding:8px;background:#811;">Chart.js not loaded</div>';
+        return;
+      }
+
+      // Register annotation plugin if available under common globals
+      const plugin = window.ChartAnnotation || window.chartjsPluginAnnotation || window['chartjs-plugin-annotation'];
+      if (plugin) {
+        try { Chart.register(plugin); } catch (e) { console.warn('Annotation plugin register failed', e); }
+      }
+
+      const labels = hourly.map(h => {
+        const d = new Date(h.dt * 1000);
+        return d.getHours().toString().padStart(2,'0') + ':00';
+      });
+
+      const windConst = hourly.map(h => +(mpsToMph(h.wind_speed)).toFixed(1));
+      const windGust = hourly.map(h => +(mpsToMph(h.wind_gust || h.wind_speed)).toFixed(1));
+      const rain = hourly.map(h => +(h.rain && h.rain['1h'] ? h.rain['1h'] : 0));
+
+      const canvas = document.getElementById('hourlyChart');
+      if (!canvas) return;
+      canvas.style.display = 'block';
+      canvas.width = canvas.clientWidth;
+      canvas.height = 240;
+      const ctx = canvas.getContext('2d');
+
+      const config = {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              type: 'line',
+              label: 'Wind (const) mph',
+              data: windConst,
+              borderColor: '#0b84ff',
+              backgroundColor: 'rgba(11,132,255,0.15)',
+              yAxisID: 'yWind',
+              tension: 0.3,
+              pointRadius: 2
+            },
+            {
+              type: 'line',
+              label: 'Wind (gust) mph',
+              data: windGust,
+              borderColor: '#ff7f0e',
+              backgroundColor: 'rgba(255,127,14,0.12)',
+              yAxisID: 'yWind',
+              tension: 0.3,
+              pointRadius: 2
+            },
+            {
+              type: 'bar',
+              label: 'Rain mm',
+              data: rain,
+              backgroundColor: 'rgba(45,85,200,0.6)',
+              yAxisID: 'yRain'
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: { mode: 'index', intersect: false },
+          stacked: false,
+          scales: {
+            x: { display: true, title: { display: true, text: 'Hour' } },
+            yWind: {
+              type: 'linear',
+              position: 'left',
+              title: { display: true, text: 'Wind (mph)' }
+            },
+            yRain: {
+              type: 'linear',
+              position: 'right',
+              title: { display: true, text: 'Rain (mm)' },
+              grid: { drawOnChartArea: false }
+            }
+          },
+          plugins: {
+            legend: { position: 'top' },
+            annotation: {
+              annotations: {
+                line_20: {
+                  type: 'line',
+                  scaleID: 'yWind',
+                  value: 20,
+                  borderColor: '#ff0000',
+                  borderWidth: 4,
+                  label: {
+                    enabled: true,
+                    content: '20 mph',
+                    position: 'start',
+                    font: { weight: 'bold' }
+                  }
+                }
+              }
+            }
+          }
+        }
+      };
+
+      try {
+        // If an existing chart instance exists, destroy it first.
+        if (window.hourlyChart && typeof window.hourlyChart.destroy === 'function') {
+          try { window.hourlyChart.destroy(); } catch (e) { /* ignore */ }
+          window.hourlyChart = null;
+        }
+        window.hourlyChart = new Chart(ctx, config);
+      } catch (err) {
+        console.error('Chart render error', err);
+        const parent = canvas.parentElement;
+        if (parent) parent.insertAdjacentHTML('beforeend', '<div style="color:#fff;padding:8px;background:#811;margin-top:6px;">Chart render failed</div>');
+      }
     };
     
     // Load on start
