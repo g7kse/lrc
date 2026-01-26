@@ -21,7 +21,7 @@
       color: #e1e4e1;
       height: 100vh;
       overflow: hidden;
-      padding: 8px;
+      padding: 4px;
       display: flex;
       flex-direction: column;
     }
@@ -42,9 +42,9 @@
     }
     
     .logo {
-      width: 200px;
+      width: 140px;
       height: auto;
-      margin: 0 auto 8px;
+      margin: 0 auto 6px;
       display: block;
     }
     
@@ -107,22 +107,22 @@
     
     .weather-container {
       background-color: #aac6d2ff;
-      border-radius: 12px;
-      padding: 12px;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      border-radius: 10px;
+      padding: 8px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
       flex: 1;
       display: flex;
       flex-direction: column;
       min-height: 0;
-      margin-bottom: 8px;
+      margin-bottom: 6px;
     }
     
     .current-weather {
       background-color: #aac6d2ff;
       color: #000000;
       border-radius: 8px;
-      padding: 12px;
-      margin-bottom: 12px;
+      padding: 8px;
+      margin-bottom: 8px;
       flex-shrink: 0;
     }
     
@@ -139,12 +139,12 @@
     }
     
     .conditions-banner {
-      padding: 16px 12px;
+      padding: 8px 8px;
       border-radius: 8px;
-      font-size: 1rem;
+      font-size: 0.9rem;
       font-weight: 700;
       text-align: center;
-      margin-bottom: 12px;
+      margin-bottom: 8px;
       flex-shrink: 0;
     }
     
@@ -196,7 +196,7 @@
     }
     
     .metric-value {
-      font-size: 1.25rem;
+      font-size: 1rem;
       font-weight: 700;
     }
     
@@ -207,17 +207,17 @@
     }
     
     .forecast-header {
-      font-size: 0.875rem;
+      font-size: 0.8rem;
       color: #000000;
       font-weight: 700;
-      margin-bottom: 8px;
+      margin-bottom: 6px;
       flex-shrink: 0;
     }
     
     .forecast-grid {
       display: grid;
       grid-template-columns: repeat(5, 1fr);
-      gap: 4px;
+      gap: 2px;
       flex: 1;
       align-content: start;
     }
@@ -225,7 +225,7 @@
     .forecast-day {
       background-color: #12437bff;
       border-radius: 6px;
-      padding: 6px 4px;
+      padding: 4px 2px;
       text-align: center;
     }
     
@@ -365,8 +365,6 @@
     let weatherData = null;
     let selectedDayIndex = -1; // -1 means current weather
     
-    // Lightweight demo: no service worker or install prompt
-    
     // Weather functionality
     const mpsToMph = (mps) => {
       return mps * 2.23694;
@@ -422,39 +420,10 @@
       selectedDayIndex = -1; // Reset to current weather
       
       try {
-        // Simulated data for Keswick, GB
-        weatherData = {
-          current: {
-            name: 'Keswick',
-            sys: { country: 'GB' },
-            main: { temp: 12.5, humidity: 72 },
-            weather: [{ description: 'partly cloudy' }],
-            rain: { '1h': 0.2 },
-            wind: { speed: 4.3, deg: 225 }
-          },
-          forecast: [
-            { dt: Date.now() / 1000 + 86400, main: { temp: 14.2 }, rain: { '3h': 1.5 }, wind: { speed: 5.1, deg: 180 } },
-            { dt: Date.now() / 1000 + 172800, main: { temp: 11.8 }, rain: { '3h': 0 }, wind: { speed: 3.2, deg: 270 } },
-            { dt: Date.now() / 1000 + 259200, main: { temp: 13.5 }, rain: { '3h': 2.8 }, wind: { speed: 6.7, deg: 135 } },
-            { dt: Date.now() / 1000 + 345600, main: { temp: 15.1 }, rain: { '3h': 0.5 }, wind: { speed: 4.9, deg: 90 } },
-            { dt: Date.now() / 1000 + 432000, main: { temp: 16.3 }, rain: { '3h': 0 }, wind: { speed: 3.8, deg: 315 } }
-          ],
-          hourly: (function(){
-            const arr = [];
-            const now = Math.floor(Date.now()/1000);
-            const base = 4.3; // m/s base
-            for (let i = 0; i < 24; i++) {
-              const ws = Math.max(0, base + Math.sin(i/3) * 1.5 + (Math.random()-0.5) * 1.2);
-              const gust = ws * (1 + 0.2 + Math.random() * 0.8);
-              const rainVal = Math.random() < 0.25 ? +(Math.random() * 3).toFixed(2) : 0;
-              arr.push({ dt: now + i * 3600, wind_speed: ws, wind_gust: gust, rain: { '1h': rainVal } });
-            }
-            return arr;
-          })()
-        };
-        
-        displayWeather(weatherData);
-        emptyState.style.display = 'none';
+        // No simulated data in this trimmed demo. Provide real data and call `displayWeather(data)`.
+        weatherData = null;
+        // Keep the empty state visible until real data is supplied.
+        emptyState.style.display = 'block';
         
       } catch (err) {
         conditionsBanner.innerHTML = '';
