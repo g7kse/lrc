@@ -343,7 +343,6 @@
   <div class="container">
     <div class="header">
       <img src="/icons/lrc_logo.png" alt="Lakeland Rowing Club Logo" class="logo">
-      <h1>Derwentwater Weather</h1>
     </div>
     
     <div id="conditionsBanner"></div>
@@ -545,10 +544,10 @@
       const { condition, conditionClass, location } = getConditions(windGustMph, detailData.wind.deg);
       const windGraphUrl = drawWindGraph(windSpeedMph, detailData.wind.deg);
       
-      // Update conditions banner
+      // Update conditions banner (hide recommendation/suggestion to save space)
       conditionsBanner.innerHTML = `
         <div class="conditions-banner ${conditionClass}">
-          ${condition.toUpperCase()} - Suggest ${location}
+          ${condition.toUpperCase()}
         </div>
       `;
       
@@ -688,7 +687,7 @@
           datasets: [
             {
               type: 'line',
-              label: 'Wind (const) mph',
+              label: 'Wind',
               data: windConst,
               borderColor: '#0b84ff',
               backgroundColor: 'rgba(11,132,255,0.15)',
@@ -698,7 +697,7 @@
             },
             {
               type: 'line',
-              label: 'Wind (gust) mph',
+              label: 'Gust',
               data: windGust,
               borderColor: '#ff7f0e',
               backgroundColor: 'rgba(255,127,14,0.12)',
@@ -708,7 +707,7 @@
             },
             {
               type: 'bar',
-              label: 'Rain mm',
+              label: 'Rain',
               data: rain,
               backgroundColor: 'rgba(45,85,200,0.6)',
               yAxisID: 'yRain'
