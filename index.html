@@ -226,17 +226,37 @@
     .current-header {
       display: flex;
       justify-content: space-between;
-      align-items: center;
+      align-items: flex-start; /* align dot with top of header text */
       gap: 12px;
     }
 
-    #conditionsBanner { display:flex; align-items:center; }
+    /* Ensure the conditions banner aligns to the top of the header block */
+    #conditionsBanner { display:flex; align-items:center; align-self:flex-start; }
+
+    .conditions-dot {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+      border: 2px solid rgba(0,0,0,0.08);
+      flex-shrink: 0;
+    }
     
     .forecast-day {
       background-color: #12437bff;
       border-radius: 6px;
       padding: 4px 2px;
       text-align: center;
+      min-height: 64px;
+    }
+
+    .forecast-dot {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      margin: 6px auto 4px;
+      border: 2px solid rgba(0,0,0,0.06);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.12);
     }
     
     .day-name {
@@ -347,27 +367,40 @@
         font-size: 1rem;
       }
 
-      /* Stack header and banner on small screens */
+      /* Keep header inline on small screens while allowing wrapping; keep dot aligned */
       .current-header {
-        flex-direction: column;
-        align-items: flex-start;
+        flex-direction: row;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      /* Ensure the left side can shrink and the banner stays to the right */
+      .current-header > div:first-child {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex: 1 1 auto;
+        min-width: 0;
       }
 
       #conditionsBanner {
-        width: 100%;
-        margin-top: 8px;
-        justify-content: flex-start;
+        width: auto;
+        margin-top: 0;
+        justify-content: flex-end;
+        align-self: center;
+        margin-left: auto;
       }
 
-      .conditions-banner {
-        min-width: auto;
-        width: 100%;
+      /* keep the dot small on mobile and don't expand it */
+      .conditions-dot {
+        width: 28px;
+        height: 28px;
       }
 
       .forecast-grid {
-        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
         gap: 6px;
-        overflow-x: auto;
       }
     }
   </style>
@@ -684,16 +717,10 @@
       const { condition, conditionClass, location } = getConditions(windGustMph, windDeg);
       const windGraphUrl = drawWindGraph(windSpeedMph, windDeg);
 
-      // Build banner HTML to embed inside the main container (placed to the right of location)
+      // Build banner HTML to embed inside the main container as a single colored dot (traffic-light style)
       const bannerHtml = `
-        <div style="display:flex;gap:12px;align-items:center;justify-content:flex-end;">
-          <div class="conditions-banner ${conditionClass}" style="padding:10px 14px;min-width:140px;">
-            <div style="font-weight:800;text-align:center">${condition.toUpperCase()}</div>
-            <div style="font-size:0.85rem;opacity:0.95;text-align:center">${location}</div>
-          </div>
-          <div style="color:#e1e4e1;font-weight:700;font-size:0.9rem;white-space:nowrap;">
-            ${windSpeedMph.toFixed(1)} mph · gust ${windGustMph.toFixed(1)} · ${getWindDirection(windDeg)}
-          </div>
+        <div style="display:flex;align-items:center;justify-content:flex-end;">
+          <div class="conditions-dot ${conditionClass}" aria-hidden="true"></div>
         </div>
       `;
       
@@ -763,7 +790,6 @@
             <div class="forecast-grid">
             ${data.forecast.map(function(day, idx) {
               const date = new Date(day.dt * 1000);
-              const rain = (day.rain && day.rain['3h']) || (day.snow && day.snow['3h']) || 0;
               const isSelected = idx === selectedDayIndex;
               const dayWindMph = day.wind.speed;
               // compute day direction from allHourly (08:00-10:59) when available
@@ -781,21 +807,8 @@
               const cond = getConditions(dayWindMph, dayDeg);
               return `
                 <div class="forecast-day ${cond.conditionClass}" onclick="selectDay(${idx})" style="cursor: pointer; ${isSelected ? 'outline: 2px solid #e1e4e1; outline-offset: -2px;' : ''}">
-                  <div class="day-name">${date.toLocaleDateString('en-US', { weekday: 'short' })}</div>
-                  <div class="day-date">${date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</div>
-                  <div class="day-temp">${Math.round(day.main.temp)}°</div>
-                  <div class="day-detail">
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707"></path>
-                    </svg>
-                    <span>${rain}mm</span>
-                  </div>
-                  <div class="day-detail">
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
-                    </svg>
-                    <span>${dayWindMph.toFixed(1)}mph ${getWindDirection(dayDeg)}</span>
-                  </div>
+                  <div class="day-name" style="font-size:0.65rem">${date.toLocaleDateString('en-US', { weekday: 'short' })}</div>
+                  <div class="forecast-dot ${cond.conditionClass}" aria-hidden="true"></div>
                 </div>
               `;
             }).join('')}
