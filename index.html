@@ -221,6 +221,16 @@
       flex: 1;
       align-content: start;
     }
+
+    /* Header layout for location + embedded conditions banner */
+    .current-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+
+    #conditionsBanner { display:flex; align-items:center; }
     
     .forecast-day {
       background-color: #12437bff;
@@ -336,6 +346,29 @@
       .day-temp {
         font-size: 1rem;
       }
+
+      /* Stack header and banner on small screens */
+      .current-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      #conditionsBanner {
+        width: 100%;
+        margin-top: 8px;
+        justify-content: flex-start;
+      }
+
+      .conditions-banner {
+        min-width: auto;
+        width: 100%;
+      }
+
+      .forecast-grid {
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: 6px;
+        overflow-x: auto;
+      }
     }
   </style>
 </head>
@@ -344,8 +377,6 @@
     <div class="header">
       <img src="/icons/lrc_logo.png" alt="Lakeland Rowing Club Logo" class="logo">
     </div>
-    
-    <div id="conditionsBanner"></div>
     
     <div id="weatherContainer"></div>
     <div id="emptyState" class="empty-state" style="display: none;">
@@ -379,28 +410,28 @@
       
       // Determine condition based on wind speed
       if (windSpeedMph < 5) {
-        condition = 'great';
+        condition = 'Great';
         conditionClass = 'conditions-great';
       } else if (windSpeedMph < 10) {
-        condition = 'good';
+        condition = 'Good';
         conditionClass = 'conditions-good';
       } else if (windSpeedMph < 15) {
-        condition = 'reasonable';
+        condition = 'Reasonable';
         conditionClass = 'conditions-reasonable';
       } else if (windSpeedMph < 20) {
-        condition = 'marginal';
+        condition = 'Marginal';
         conditionClass = 'conditions-marginal';
       } else {
-        condition = 'bad';
+        condition = 'Dont bother';
         conditionClass = 'conditions-bad';
       }
       
       // Determine location based on wind direction
       const direction = getWindDirection(windDeg);
       if (direction === 'E' || direction === 'NE' || direction === 'SE') {
-        location = 'Ashness';
+        location = 'East Shore';
       } else if (direction === 'W' || direction === 'NW' || direction === 'SW') {
-        location = 'Lingholme';
+        location = 'West Shore';
       } else if (direction === 'S') {
         location = 'The Bay';
       } else {
@@ -414,7 +445,6 @@
       const errorEl = document.getElementById('error');
       const weatherContainer = document.getElementById('weatherContainer');
       const emptyState = document.getElementById('emptyState');
-      const conditionsBanner = document.getElementById('conditionsBanner');
       
       selectedDayIndex = -1; // Reset to current weather
       
@@ -653,15 +683,15 @@
       // Use gusting value to decide conditions/banner
       const { condition, conditionClass, location } = getConditions(windGustMph, windDeg);
       const windGraphUrl = drawWindGraph(windSpeedMph, windDeg);
-      
-      // Update conditions banner to show condition, location and wind for selected day
-      conditionsBanner.innerHTML = `
-        <div style="display:flex;gap:12px;align-items:center;justify-content:center;">
-          <div class="conditions-banner ${conditionClass}" style="padding:10px 14px;">
-            <div style="font-weight:800">${condition.toUpperCase()}</div>
-            <div style="font-size:0.85rem;opacity:0.95">${location}</div>
+
+      // Build banner HTML to embed inside the main container (placed to the right of location)
+      const bannerHtml = `
+        <div style="display:flex;gap:12px;align-items:center;justify-content:flex-end;">
+          <div class="conditions-banner ${conditionClass}" style="padding:10px 14px;min-width:140px;">
+            <div style="font-weight:800;text-align:center">${condition.toUpperCase()}</div>
+            <div style="font-size:0.85rem;opacity:0.95;text-align:center">${location}</div>
           </div>
-          <div style="color:#e1e4e1;font-weight:700;font-size:0.9rem;">
+          <div style="color:#e1e4e1;font-weight:700;font-size:0.9rem;white-space:nowrap;">
             ${windSpeedMph.toFixed(1)} mph · gust ${windGustMph.toFixed(1)} · ${getWindDirection(windDeg)}
           </div>
         </div>
@@ -670,14 +700,19 @@
       const html = `
         <div class="weather-container">
           <div class="current-weather">
-            <div class="location">
-              <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
-              </svg>
-              <h2>Keswick, GB</h2>
+            <div class="current-header">
+              <div>
+                <div class="location" style="display:flex;align-items:center;gap:8px;">
+                  <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                  </svg>
+                  <h2 style="margin:0">Keswick, GB</h2>
+                </div>
+                <div style="font-size: 0.75rem; margin-top:6px; opacity: 0.9;">${detailLabel}</div>
+              </div>
+              <div id="conditionsBanner">${bannerHtml}</div>
             </div>
-            <div style="font-size: 0.75rem; margin-bottom: 8px; opacity: 0.9;">${detailLabel}</div>
             
             <div style="display: grid; grid-template-columns: 120px 1fr; gap: 12px; align-items: center;">
               <img src="${windGraphUrl}" alt="Wind graph" style="width: 120px; height: 120px;">
