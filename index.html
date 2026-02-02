@@ -378,8 +378,9 @@
       /* Ensure the left side can shrink and the banner stays to the right */
       .current-header > div:first-child {
         display: flex;
-        align-items: center;
-        gap: 8px;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
         flex: 1 1 auto;
         min-width: 0;
       }
@@ -399,8 +400,8 @@
       }
 
       .forecast-grid {
-        grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
-        gap: 6px;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 4px;
       }
     }
   </style>
