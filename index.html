@@ -421,7 +421,7 @@
       try {
         // Use the user-provided Open-Meteo URL (wind in mph)
         emptyState.style.display = 'block';
-        const url = 'https://api.open-meteo.com/v1/forecast?latitude=54.594723&longitude=-3.14536&hourly=temperature_2m,wind_speed_10m,wind_gusts_10m,precipitation&wind_speed_unit=mph&timezone=auto';
+        const url = 'https://api.open-meteo.com/v1/forecast?latitude=54.594723&longitude=-3.14536&hourly=temperature_2m,wind_speed_10m,wind_gusts_10m,winddirection_10m,precipitation&wind_speed_unit=mph&timezone=auto';
         const resp = await fetch(url);
         if (resp.ok) {
           const j = await resp.json();
@@ -440,7 +440,7 @@
             main: { temp: getVal(j.hourly.temperature_2m, idx), humidity: 0 },
             weather: [{ description: '' }],
             rain: { '1h': getVal(j.hourly.precipitation, idx) },
-            wind: { speed: getVal(j.hourly.wind_speed_10m, idx), deg: 0, gust: getVal(j.hourly.wind_gusts_10m, idx) }
+            wind: { speed: getVal(j.hourly.wind_speed_10m, idx), deg: getVal(j.hourly.winddirection_10m, idx), gust: getVal(j.hourly.wind_gusts_10m, idx) }
           };
 
           // Build hourly array (next 12 hours)
@@ -450,6 +450,7 @@
               dt: Math.floor(new Date(times[i]).getTime() / 1000),
               wind_speed: getVal(j.hourly.wind_speed_10m, i),
               wind_gust: getVal(j.hourly.wind_gusts_10m, i) || getVal(j.hourly.wind_speed_10m, i),
+              wind_deg: getVal(j.hourly.winddirection_10m, i),
               rain: { '1h': getVal(j.hourly.precipitation, i) }
             });
           }
@@ -479,6 +480,15 @@
           });
 
           weatherData = { current, forecast, hourly };
+          // store full hourly series so we can show per-day hourly charts
+          const allHourly = times.map((t, i) => ({
+            dt: Math.floor(new Date(t).getTime() / 1000),
+            wind_speed: getVal(j.hourly.wind_speed_10m, i),
+            wind_gust: getVal(j.hourly.wind_gusts_10m, i) || getVal(j.hourly.wind_speed_10m, i),
+            wind_deg: getVal(j.hourly.winddirection_10m, i),
+            rain: { '1h': getVal(j.hourly.precipitation, i) }
+          }));
+          weatherData = { current, forecast, hourly, allHourly };
           emptyState.style.display = 'none';
           displayWeather(weatherData);
           return;
@@ -500,7 +510,7 @@
           const ws = +(5 + Math.abs(Math.sin(i/2))*10 + (Math.random()*2-1)).toFixed(1);
           const gust = +(ws * (1.2 + Math.random()*0.6)).toFixed(1);
           const rainVal = Math.random() < 0.25 ? +(Math.random()*3).toFixed(2) : 0;
-          demoHourly.push({ dt: now + i*3600, wind_speed: ws, wind_gust: gust, rain: {'1h': rainVal} });
+          demoHourly.push({ dt: now + i*3600, wind_speed: ws, wind_gust: gust, wind_deg: Math.floor(Math.random()*360), rain: {'1h': rainVal} });
         }
 
         weatherData = {
@@ -515,7 +525,8 @@
             { dt: now + 345600, main: { temp: 15.1 }, rain: {'3h': 0.5}, wind: { speed: 9.9, deg: 90, gust: 12 } },
             { dt: now + 432000, main: { temp: 16.3 }, rain: {'3h': 0}, wind: { speed: 7.8, deg: 315, gust: 10 } }
           ],
-          hourly: demoHourly
+          hourly: demoHourly,
+          allHourly: demoHourly
         };
 
         emptyState.style.display = 'none';
@@ -598,16 +609,62 @@
         detailLabel = date.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
       }
       
-      const windSpeedMph = detailData.wind.speed;
-      // Determine gusting value: prefer explicit gust if present, otherwise estimate
-      const windGustMph = detailData.wind.gust ? detailData.wind.gust : (windSpeedMph * 1.5);
+      // Helpers to compute averages (circular mean for direction)
+      const avg = (arr) => arr.length ? arr.reduce((s, v) => s + v, 0) / arr.length : 0;
+      const avgDirection = (degArr) => {
+        if (!degArr || !degArr.length) return 0;
+        let sx = 0, sy = 0;
+        degArr.forEach(d => {
+          const r = d * Math.PI / 180;
+          sx += Math.cos(r);
+          sy += Math.sin(r);
+        });
+        let a = Math.atan2(sy, sx) * 180 / Math.PI;
+        if (a < 0) a += 360;
+        return Math.round(a);
+      };
+
+      // Default values from detailData
+      let windSpeedMph = detailData.wind.speed || 0;
+      let windGustMph = detailData.wind.gust ? detailData.wind.gust : (windSpeedMph * 1.5);
+      let windDeg = detailData.wind.deg || 0;
+
+      // If a forecast day is selected, derive metrics from the day's 08:00-10:59 hourly window
+      if (selectedDayIndex !== -1 && data.allHourly && data.allHourly.length && data.forecast && data.forecast[selectedDayIndex]) {
+        const selDay = new Date(data.forecast[selectedDayIndex].dt * 1000);
+        const dayKey = selDay.toISOString().slice(0,10);
+        const windowHours = data.allHourly.filter(h => {
+          const d = new Date(h.dt * 1000);
+          const key = d.toISOString().slice(0,10);
+          const hr = d.getHours();
+          return key === dayKey && hr >= 8 && hr < 11;
+        });
+        if (windowHours.length) {
+          windSpeedMph = +(avg(windowHours.map(h => h.wind_speed))).toFixed(1);
+          windGustMph = +(Math.max(...windowHours.map(h => h.wind_gust || h.wind_speed))).toFixed(1);
+          windDeg = avgDirection(windowHours.map(h => (h.wind_deg !== undefined ? h.wind_deg : (h.wind_dir_deg || 0))));
+          // if hourly entries don't contain explicit deg, try to use forecast deg if present
+          if (!windDeg && data.forecast[selectedDayIndex].wind && data.forecast[selectedDayIndex].wind.deg) {
+            windDeg = data.forecast[selectedDayIndex].wind.deg;
+          }
+        }
+      }
+
       // Use gusting value to decide conditions/banner
-      const { condition, conditionClass, location } = getConditions(windGustMph, detailData.wind.deg);
-      const windGraphUrl = drawWindGraph(windSpeedMph, detailData.wind.deg);
+      const { condition, conditionClass, location } = getConditions(windGustMph, windDeg);
+      const windGraphUrl = drawWindGraph(windSpeedMph, windDeg);
       
-      // Update conditions banner
+      // Update conditions banner to show condition, location and wind for selected day
       conditionsBanner.innerHTML = `
-        <div class="conditions-banner ${conditionClass}">${condition.toUpperCase()}</div>
+        <div style="display:flex;gap:12px;align-items:center;justify-content:center;">
+          <div class="conditions-banner ${conditionClass}" style="padding:10px 14px;">
+            <div style="font-weight:800">${condition.toUpperCase()}</div>
+            <div style="font-size:0.85rem;opacity:0.95">${location}</div>
+          </div>
+          <div style="color:#e1e4e1;font-weight:700;font-size:0.9rem;">
+            ${windSpeedMph.toFixed(1)} mph · gust ${windGustMph.toFixed(1)} · ${getWindDirection(windDeg)}
+          </div>
+        </div>
       `;
       
       const html = `
@@ -647,8 +704,8 @@
                 <div class="metric">
                   <div class="metric-icon" style="font-size: 16px; color: #000000;">→</div>
                   <div class="metric-label">Direction</div>
-                  <div class="metric-value">${getWindDirection(detailData.wind.deg)}</div>
-                  <div class="metric-sub">${detailData.wind.deg}°</div>
+                  <div class="metric-value">${getWindDirection(windDeg)}</div>
+                  <div class="metric-sub">${windDeg}°</div>
                 </div>
                 
                 <div class="metric">
@@ -674,7 +731,19 @@
               const rain = (day.rain && day.rain['3h']) || (day.snow && day.snow['3h']) || 0;
               const isSelected = idx === selectedDayIndex;
               const dayWindMph = day.wind.speed;
-              const cond = getConditions(dayWindMph, day.wind.deg);
+              // compute day direction from allHourly (08:00-10:59) when available
+              let dayDeg = day.wind.deg || 0;
+              if (data.allHourly && data.allHourly.length) {
+                const dayKey = date.toISOString().slice(0,10);
+                const fh = data.allHourly.filter(h => {
+                  const d = new Date(h.dt * 1000);
+                  const key = d.toISOString().slice(0,10);
+                  const hr = d.getHours();
+                  return key === dayKey && hr >= 8 && hr < 11;
+                });
+                if (fh.length) dayDeg = avgDirection(fh.map(h => h.wind_deg || 0));
+              }
+              const cond = getConditions(dayWindMph, dayDeg);
               return `
                 <div class="forecast-day ${cond.conditionClass}" onclick="selectDay(${idx})" style="cursor: pointer; ${isSelected ? 'outline: 2px solid #e1e4e1; outline-offset: -2px;' : ''}">
                   <div class="day-name">${date.toLocaleDateString('en-US', { weekday: 'short' })}</div>
@@ -690,7 +759,7 @@
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
                     </svg>
-                    <span>${dayWindMph.toFixed(1)}mph ${getWindDirection(day.wind.deg)}</span>
+                    <span>${dayWindMph.toFixed(1)}mph ${getWindDirection(dayDeg)}</span>
                   </div>
                 </div>
               `;
@@ -701,9 +770,16 @@
       `;
       
       container.innerHTML = html;
-      // Render hourly chart if hourly data available
+      // Render hourly chart: use the selected day's hourly slice when possible
       try {
-        if (data.hourly && data.hourly.length) renderHourlyChart(data.hourly);
+        let chartHourly = data.hourly;
+        if (selectedDayIndex !== -1 && data.allHourly && data.allHourly.length && data.forecast && data.forecast[selectedDayIndex]) {
+          const selectedDay = new Date(data.forecast[selectedDayIndex].dt * 1000);
+          const dayKey = selectedDay.toISOString().slice(0,10);
+          const filtered = data.allHourly.filter(h => new Date(h.dt * 1000).toISOString().slice(0,10) === dayKey);
+          if (filtered.length) chartHourly = filtered;
+        }
+        if (chartHourly && chartHourly.length) renderHourlyChart(chartHourly);
       } catch (e) {
         console.warn('Hourly chart render failed', e);
       }
