@@ -226,12 +226,11 @@
     .current-header {
       display: flex;
       justify-content: space-between;
-      align-items: flex-start; /* align dot with top of header text */
+      align-items: center;
       gap: 12px;
     }
 
-    /* Ensure the conditions banner aligns to the top of the header block */
-    #conditionsBanner { display:flex; align-items:center; align-self:flex-start; }
+    #conditionsBanner { display:flex; align-items:center; }
 
     .conditions-dot {
       width: 36px;
@@ -367,30 +366,16 @@
         font-size: 1rem;
       }
 
-      /* Keep header inline on small screens while allowing wrapping; keep dot aligned */
+      /* Stack header and banner on small screens; keep banner right-aligned */
       .current-header {
-        flex-direction: row;
-        align-items: center;
-        gap: 8px;
-        flex-wrap: wrap;
-      }
-
-      /* Ensure the left side can shrink and the banner stays to the right */
-      .current-header > div:first-child {
-        display: flex;
         flex-direction: column;
-        align-items: flex-start;
-        gap: 4px;
-        flex: 1 1 auto;
-        min-width: 0;
+        align-items: stretch;
       }
 
       #conditionsBanner {
-        width: auto;
-        margin-top: 0;
+        width: 100%;
+        margin-top: 8px;
         justify-content: flex-end;
-        align-self: center;
-        margin-left: auto;
       }
 
       /* keep the dot small on mobile and don't expand it */
@@ -400,8 +385,8 @@
       }
 
       .forecast-grid {
-        grid-template-columns: repeat(5, 1fr);
-        gap: 4px;
+        grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
+        gap: 6px;
       }
     }
   </style>
