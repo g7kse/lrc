@@ -5,412 +5,112 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#3b4b59">
   <meta name="description" content="Lakeland Rowing Club Weather">
-  <title>Derwentwater Weather</title>
+  <title>Lakeland Rowing Club Weather</title>
   <link rel="manifest" href="/manifest.json">
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-    
-    body {
-      font-family: 'IBM Plex Mono', monospace;
-      background-color: #12437bff;
-      color: #e1e4e1;
-      height: 100vh;
-      overflow: hidden;
-      padding: 4px;
-      display: flex;
-      flex-direction: column;
-    }
-    
-    .container {
-      max-width: 1200px;
-      margin: 0 auto;
-      width: 100%;
-      height: 100%;
-      display: flex;
-      flex-direction: column;
-    }
-    
-    .header {
-      text-align: center;
-      margin-bottom: 12px;
-      flex-shrink: 0;
-    }
-    
-    .logo {
-      width: 140px;
-      height: auto;
-      margin: 0 auto 6px;
-      display: block;
-    }
-    
-    h1 {
-      font-size: 1.5rem;
-      font-weight: 700;
-      margin-bottom: 8px;
-    }
-    
-    input {
-      flex: 1;
-      padding: 8px 12px;
-      border-radius: 6px;
-      border: 1px solid #4a5a69;
-      background-color: #aac6d2ff;
-      color: #e1e4e1;
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 0.875rem;
-    }
-    
-    input::placeholder {
-      color: #8a9aa9;
-    }
-    
-    input:focus {
-      outline: none;
-      border-color: #6a7a89;
-    }
-    
-    button {
-      padding: 8px 16px;
-      background-color: #aac6d2ff;
-      color: #050505;
-      border: none;
-      border-radius: 6px;
-      font-family: 'IBM Plex Mono', monospace;
-      font-weight: 600;
-      cursor: pointer;
-      font-size: 0.875rem;
-    }
-    
-    button:hover {
-      opacity: 0.8;
-    }
-    
-    button:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-    
-    .error {
-      margin-top: 4px;
-      padding: 4px 12px;
-      background-color: #5a3b3b;
-      color: #ffb3b3;
-      border-radius: 6px;
-      display: inline-block;
-      font-size: 0.75rem;
-    }
-    
-    .weather-container {
-      background-color: #aac6d2ff;
-      border-radius: 10px;
-      padding: 8px;
-      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      min-height: 0;
-      margin-bottom: 6px;
-    }
-    
-    .current-weather {
-      background-color: #aac6d2ff;
-      color: #000000;
-      border-radius: 8px;
-      padding: 8px;
-      margin-bottom: 8px;
-      flex-shrink: 0;
-    }
-    
-    .location {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      margin-bottom: 4px;
-    }
-    
-    .location h2 {
-      font-size: 1rem;
-      font-weight: 700;
-    }
-    
-    .conditions-banner {
-      padding: 8px 8px;
-      border-radius: 8px;
-      font-size: 0.9rem;
-      font-weight: 700;
-      text-align: center;
-      margin-bottom: 8px;
-      flex-shrink: 0;
-    }
-    
-    .conditions-great {
-      background-color: #2d5f2d;
-      color: #90ee90;
-    }
-    
-    .conditions-good {
-      background-color: #4a5f2d;
-      color: #c8e690;
-    }
-    
-    .conditions-reasonable {
-      background-color: #5f5f2d;
-      color: #ffff90;
-    }
-    
-    .conditions-marginal {
-      background-color: #5f3d2d;
-      color: #ffb380;
-    }
-    
-    .conditions-bad {
-      background-color: #5f2d2d;
-      color: #ff9090;
-    }
-    
-    .current-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 8px;
-    }
-    
-    .metric {
-      text-align: center;
-    }
-    
-    .metric-icon {
-      width: 20px;
-      height: 20px;
-      margin: 0 auto 4px;
-    }
-    
-    .metric-label {
-      font-size: 0.625rem;
-      opacity: 0.8;
-      margin-bottom: 2px;
-    }
-    
-    .metric-value {
-      font-size: 1rem;
-      font-weight: 700;
-    }
-    
-    .metric-sub {
-      font-size: 0.625rem;
-      opacity: 0.7;
-      margin-top: 2px;
-    }
-    
-    .forecast-header {
-      font-size: 0.8rem;
-      color: #000000;
-      font-weight: 700;
-      margin-bottom: 6px;
-      flex-shrink: 0;
-    }
-    
-    .forecast-grid {
-      display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      gap: 2px;
-      flex: 1;
-      align-content: start;
-    }
-
-    /* Header layout for location + embedded conditions banner */
-    .current-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 12px;
-    }
-
-    #conditionsBanner { display:flex; align-items:center; }
-
-    .conditions-dot {
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.25);
-      border: 2px solid rgba(0,0,0,0.08);
-      flex-shrink: 0;
-    }
-    
-    .forecast-day {
-      background-color: #12437bff;
-      border-radius: 6px;
-      padding: 4px 2px;
-      text-align: center;
-      min-height: 64px;
-    }
-
-    .forecast-dot {
-      width: 26px;
-      height: 26px;
-      border-radius: 50%;
-      margin: 6px auto 4px;
-      border: 2px solid rgba(0,0,0,0.06);
-      box-shadow: 0 2px 6px rgba(0,0,0,0.12);
-    }
-    
-    .day-name {
-      font-weight: 600;
-      font-size: 0.625rem;
-      margin-bottom: 2px;
-    }
-    
-    .day-date {
-      font-size: 0.5rem;
-      opacity: 0.8;
-      margin-bottom: 4px;
-    }
-    
-    .day-temp {
-      font-size: 1.125rem;
-      font-weight: 700;
-      margin-bottom: 4px;
-    }
-    
-    .day-detail {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 2px;
-      font-size: 0.5rem;
-      margin-bottom: 2px;
-    }
-    
-    .day-detail svg {
-      width: 10px;
-      height: 10px;
-    }
-    
-    .empty-state {
-      text-align: center;
-      margin-top: 48px;
-    }
-    
-    .empty-icon {
-      width: 80px;
-      height: 80px;
-      margin: 0 auto 16px;
-      opacity: 0.5;
-    }
-    
-    .empty-text {
-      font-size: 1.25rem;
-      opacity: 0.8;
-    }
-    
-    .install-prompt {
-      position: fixed;
-      bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      background-color: #4a5a69;
-      padding: 16px 24px;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-      display: none;
-      align-items: center;
-      gap: 16px;
-      max-width: 90%;
-      z-index: 1000;
-    }
-    
-    .install-prompt.show {
-      display: flex;
-    }
-    
-    .install-prompt button {
-      white-space: nowrap;
-    }
-    
-    @media (max-width: 768px) {
-      .logo {
-        width: 60px;
-      }
-      
-      h1 {
-        font-size: 1.25rem;
-      }
-      
-      .current-grid {
-        grid-template-columns: repeat(4, 1fr);
-        gap: 6px;
-      }
-      
-      .metric-value {
-        font-size: 1rem;
-      }
-      
-      .metric-icon {
-        width: 16px;
-        height: 16px;
-      }
-      
-      .forecast-grid {
-        gap: 3px;
-      }
-      
-      .forecast-day {
-        padding: 4px 2px;
-      }
-      
-      .day-temp {
-        font-size: 1rem;
-      }
-
-      /* Stack header and banner on small screens; keep banner right-aligned */
-      .current-header {
-        flex-direction: column;
-        align-items: stretch;
-      }
-
-      #conditionsBanner {
-        width: 100%;
-        margin-top: 8px;
-        justify-content: flex-end;
-      }
-
-      /* keep the dot small on mobile and don't expand it */
-      .conditions-dot {
-        width: 28px;
-        height: 28px;
-      }
-
-      .forecast-grid {
-        grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
-        gap: 6px;
-      }
-    }
-  </style>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div class="container">
-    <div class="header">
-      <img src="/icons/lrc_logo.png" alt="Lakeland Rowing Club Logo" class="logo">
+  <nav class="navbar navbar-expand-lg navbar-dark shadow-sm" style="background-color:#12437b;">
+    <div class="container-fluid">
+      <a class="navbar-brand d-flex align-items-center" href="#" onclick="selectDay(-1);return false;">
+        <img src="/icons/lrc_logo.png" alt="Lakeland Rowing Club Logo" width="40" height="40" class="me-2">
+        Derwentwater Weather
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu" aria-controls="navMenu" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navMenu">
+        <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-lg-center">
+          <li class="nav-item">
+            <a class="nav-link" href="#" onclick="selectDay(-1);return false;">Home</a>
+          </li>
+          <li class="nav-item">
+            <button class="btn btn-outline-primary ms-2" id="adultWeekendBtn" onclick="selectWeekend('adult')">Adult Weekend</button>
+          </li>
+          <li class="nav-item">
+            <button class="btn btn-outline-secondary ms-2" id="juniorWeekendBtn" onclick="selectWeekend('junior')">Junior Weekend</button>
+          </li>
+        </ul>
+      </div>
     </div>
-    
-    <div id="weatherContainer"></div>
-    <div id="emptyState" class="empty-state" style="display: none;">
-      <svg class="empty-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"></path>
-      </svg>
-      <p class="empty-text">Loading weather...</p>
+  </nav>
+
+  <div class="app-container container my-3">
+    <div class="row g-3">
+      <div class="col-lg-8">
+        <div id="weatherContainer"></div>
+        <div id="emptyState" class="empty-state" style="display: none;">
+          <svg class="empty-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"></path>
+          </svg>
+          <p class="empty-text">Loading weather...</p>
+        </div>
+      </div>
+
+      <div class="col-lg-4">
+        <div id="statusAlert" class="alert alert-secondary mb-3" role="alert">
+          Loading status...
+        </div>
+        <div class="card" id="calendarCard">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <strong>Events</strong>
+            <small id="eventsCount" class="text-muted">—</small>
+          </div>
+          <div class="card-body p-2" id="eventsList">
+            <div class="text-muted small">Loading events...</div>
+          </div>
+        </div>
+        
+      </div>
     </div>
   </div>
   
-  <!-- Chart.js and annotation plugin -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.3.0/dist/chart.umd.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@2.1.1/dist/chartjs-plugin-annotation.min.js"></script>
+  <!-- Bootstrap JS (optional components) -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
  <script>
+    // Load events from /events.txt (expected CSV-like: YYYY-MM-DD,Title,tag)
+    const loadEvents = async () => {
+      const listEl = document.getElementById('eventsList');
+      const countEl = document.getElementById('eventsCount');
+      try {
+        const resp = await fetch('/events.txt');
+        if (!resp.ok) throw new Error('No events file');
+        const txt = await resp.text();
+        const lines = txt.split(/\r?\n/).map(l => l.trim()).filter(l => l && !l.startsWith('#'));
+        const events = lines.map(l => {
+          const parts = l.split(',');
+          return { date: parts[0]?.trim(), title: parts[1]?.trim(), tag: parts[2]?.trim() };
+        }).filter(e => e.date && e.title);
+
+        if (!events.length) {
+          listEl.innerHTML = '<div class="text-muted small">No events found</div>';
+          countEl.textContent = '0';
+          return;
+        }
+
+        // sort ascending
+        events.sort((a,b)=> new Date(a.date) - new Date(b.date));
+        countEl.textContent = events.length;
+
+        const html = events.map(e => {
+          const d = new Date(e.date);
+          const pretty = isNaN(d.getTime()) ? e.date : d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
+          const badge = e.tag ? `<span class="badge bg-secondary ms-2">${e.tag}</span>` : '';
+          return `<div class="d-flex justify-content-between align-items-center py-1 border-bottom">
+                    <div><strong>${pretty}</strong> <div class="small text-muted">${e.title}</div></div>
+                    <div>${badge}</div>
+                  </div>`;
+        }).join('');
+        listEl.innerHTML = html;
+      } catch (err) {
+        listEl.innerHTML = '<div class="text-muted small">events file not found</div>';
+        if (countEl) countEl.textContent = '—';
+      }
+    };
     let deferredPrompt;
     let weatherData = null;
     let selectedDayIndex = -1; // -1 means current weather
@@ -426,25 +126,28 @@
     
     const getConditions = (windSpeedMph, windDeg) => {
       let condition, conditionClass, location;
-      
-      // Determine condition based on wind speed
-      if (windSpeedMph < 5) {
+      const th = (window.appConfig && window.appConfig.conditions) ? window.appConfig.conditions : { great:5, good:10, reasonable:15, marginal:20 };
+
+      if (windSpeedMph < th.great) {
         condition = 'Great';
-        conditionClass = 'conditions-great';
-      } else if (windSpeedMph < 10) {
+      } else if (windSpeedMph < th.good) {
         condition = 'Good';
-        conditionClass = 'conditions-good';
-      } else if (windSpeedMph < 15) {
+      } else if (windSpeedMph < th.reasonable) {
         condition = 'Reasonable';
-        conditionClass = 'conditions-reasonable';
-      } else if (windSpeedMph < 20) {
+      } else if (windSpeedMph < th.marginal) {
         condition = 'Marginal';
-        conditionClass = 'conditions-marginal';
       } else {
         condition = 'Dont bother';
-        conditionClass = 'conditions-bad';
       }
-      
+
+      // pick the configured CSS class for this condition if provided
+      try {
+        const cmap = (window.appConfig && window.appConfig.colors && window.appConfig.colors.conditions) ? window.appConfig.colors.conditions : null;
+        conditionClass = cmap && cmap[condition] ? cmap[condition] : (condition === 'Great' ? 'conditions-great' : (condition === 'Good' ? 'conditions-good' : (condition === 'Reasonable' ? 'conditions-reasonable' : (condition === 'Marginal' ? 'conditions-marginal' : 'conditions-bad'))));
+      } catch (e) {
+        conditionClass = (condition === 'Great' ? 'conditions-great' : (condition === 'Good' ? 'conditions-good' : (condition === 'Reasonable' ? 'conditions-reasonable' : (condition === 'Marginal' ? 'conditions-marginal' : 'conditions-bad'))));
+      }
+
       // Determine location based on wind direction
       const direction = getWindDirection(windDeg);
       if (direction === 'E' || direction === 'NE' || direction === 'SE') {
@@ -456,8 +159,25 @@
       } else {
         location = "Its up to you";
       }
-      
+
       return { condition, conditionClass, location };
+    };
+
+    const mapConditionToAlertClass = (condition) => {
+      try {
+        const amap = (window.appConfig && window.appConfig.colors && window.appConfig.colors.alerts) ? window.appConfig.colors.alerts : null;
+        if (amap && amap[condition]) return amap[condition];
+      } catch (e) {
+        // fallthrough to defaults
+      }
+      switch (condition) {
+        case 'Great': return 'alert-success';
+        case 'Good': return 'alert-info';
+        case 'Reasonable': return 'alert-warning';
+        case 'Marginal': return 'alert-warning';
+        case 'Dont bother': return 'alert-danger';
+        default: return 'alert-secondary';
+      }
     };
     
     const fetchWeather = async () => {
@@ -587,6 +307,20 @@
       selectedDayIndex = index;
       displayWeather(weatherData);
     };
+
+    // mode: 'adult' => Saturday 08:00-10:59, 'junior' => Sunday 10:00-12:59
+    const selectWeekend = (mode) => {
+      if (!weatherData || !weatherData.allHourly) {
+        alert('Weather data not loaded yet');
+        return;
+      }
+      if (mode === 'adult') {
+        selectedDayIndex = -2;
+      } else {
+        selectedDayIndex = -3;
+      }
+      displayWeather(weatherData);
+    };
     
     const drawWindGraph = (windSpeedMph, windDeg) => {
       const canvas = document.createElement('canvas');
@@ -649,9 +383,60 @@
       
       // Determine which day to show in detail
       let detailData, detailLabel;
+      // Home / current
       if (selectedDayIndex === -1) {
         detailData = data.current;
         detailLabel = 'Current Weather';
+      // Adult / Junior weekend special selections
+      } else if (selectedDayIndex === -2 || selectedDayIndex === -3) {
+        // compute next upcoming Saturday (6) for adult, Sunday (0) for junior
+        const now = new Date();
+        const targetDay = selectedDayIndex === -2 ? 6 : 0;
+        const d = new Date(now);
+        let diff = (targetDay + 7 - d.getDay()) % 7;
+        if (diff === 0) diff = 7; // choose next week if today is the target
+        d.setDate(d.getDate() + diff);
+        const dayKey = d.toISOString().slice(0,10);
+        const startHour = selectedDayIndex === -2 ? 8 : 10;
+        const endHour = selectedDayIndex === -2 ? 11 : 13; // exclusive
+
+        const windowHours = (data.allHourly || []).filter(h => {
+          const dd = new Date(h.dt * 1000);
+          const key = dd.toISOString().slice(0,10);
+          const hr = dd.getHours();
+          return key === dayKey && hr >= startHour && hr < endHour;
+        });
+
+        // compute aggregated values from the window
+        const avg = (arr) => arr.length ? arr.reduce((s, v) => s + v, 0) / arr.length : 0;
+        const avgDirection = (degArr) => {
+          if (!degArr || !degArr.length) return 0;
+          let sx = 0, sy = 0;
+          degArr.forEach(dd => { const r = dd * Math.PI / 180; sx += Math.cos(r); sy += Math.sin(r); });
+          let a = Math.atan2(sy, sx) * 180 / Math.PI; if (a < 0) a += 360; return Math.round(a);
+        };
+
+        if (windowHours.length) {
+          const tempAvg = +(avg(windowHours.map(h => h.temp || 0))).toFixed(1);
+          const windAvg = +(avg(windowHours.map(h => h.wind_speed || 0))).toFixed(1);
+          const gustMax = +(Math.max(...windowHours.map(h => h.wind_gust || h.wind_speed || 0))).toFixed(1);
+          const degAvg = avgDirection(windowHours.map(h => h.wind_deg || 0));
+          const rainSum = +(windowHours.reduce((s,h) => s + ((h.rain && h.rain['1h']) || 0), 0)).toFixed(2);
+          detailData = { main: { temp: tempAvg, humidity: 0 }, rain: { '3h': rainSum }, wind: { speed: windAvg, deg: degAvg, gust: gustMax }, weather: [{ description: '' }] };
+        } else {
+          // fallback: try to find a forecast entry for that day
+          const found = (data.forecast || []).find(f => {
+            const k = new Date(f.dt * 1000).toISOString().slice(0,10);
+            return k === dayKey;
+          });
+          if (found) {
+            detailData = found;
+          } else {
+            detailData = { main: { temp: 0, humidity: 0 }, rain: { '3h': 0 }, wind: { speed: 0, deg: 0, gust: 0 }, weather: [{ description: '' }] };
+          }
+        }
+        const prettyDay = d.toLocaleDateString('en-GB', { weekday: 'long', month: 'short', day: 'numeric' });
+        detailLabel = (selectedDayIndex === -2 ? 'Adult Weekend — ' : 'Junior Weekend — ') + prettyDay + ` ${startHour}:00-${(endHour-1)}:59`;
       } else {
         detailData = data.forecast[selectedDayIndex];
         const date = new Date(detailData.dt * 1000);
@@ -703,12 +488,66 @@
       const { condition, conditionClass, location } = getConditions(windGustMph, windDeg);
       const windGraphUrl = drawWindGraph(windSpeedMph, windDeg);
 
+      // Update top-right status alert to match main condition
+      try {
+        const statusEl = document.getElementById('statusAlert');
+        if (statusEl) {
+          const cls = mapConditionToAlertClass(condition);
+          statusEl.className = 'alert ' + cls + ' mb-3';
+          statusEl.innerHTML = `<strong>${condition}</strong> — ${location}`;
+        }
+      } catch (e) { /* ignore */ }
+
+      // Build a compact forecast HTML for the 5-day list (clickable)
+      let forecastHtml = '';
+      try {
+        if (data.forecast && data.forecast.length) {
+          forecastHtml = data.forecast.slice(0,5).map(function(day, idx) {
+            const date = new Date(day.dt * 1000);
+            const pretty = date.toLocaleDateString('en-GB', { weekday: 'short', day: '2-digit', month: 'short' });
+
+            // sample 09:00 hour if available
+            let hourSample = null;
+            if (data.allHourly && data.allHourly.length) {
+              const key = date.toISOString().slice(0,10);
+              const matched = data.allHourly.filter(h => {
+                const d = new Date(h.dt * 1000);
+                return d.toISOString().slice(0,10) === key && d.getHours() === 9;
+              });
+              if (matched.length) hourSample = matched[0];
+            }
+
+            const rainVal = hourSample ? ((hourSample.rain && hourSample.rain['1h']) || 0) : ((day.rain && (day.rain['3h'] || day.rain['1h'])) ? (day.rain['3h'] || day.rain['1h']) : 0);
+            const windVal = hourSample ? (hourSample.wind_speed || 0) : ((day.wind && day.wind.speed) ? day.wind.speed : 0);
+            const gustVal = hourSample ? (hourSample.wind_gust || hourSample.wind_speed || 0) : ((day.wind && (day.wind.gust || day.wind.speed)) ? (day.wind.gust || day.wind.speed) : 0);
+
+            const rainClass = indicatorClassFor(rainVal, appConfig.rain);
+            const windClass = indicatorClassFor(windVal, appConfig.wind);
+            const gustClass = indicatorClassFor(gustVal, appConfig.wind);
+
+            const fmt = (v) => String(Math.round(v)).padStart(2,'0');
+            const rainDisp = fmt(rainVal);
+            const windDisp = fmt(windVal);
+            const gustDisp = fmt(gustVal);
+
+            return `
+              <button class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" onclick="selectDay(${idx})">
+                <div><strong>${pretty}</strong></div>
+                <div class="d-flex gap-2 align-items-center">
+                  <div class="small text-muted">Rain</div>
+                  <div class="badge ${rainClass} rounded-pill px-2">${rainDisp}</div>
+                  <div class="small text-muted ms-2">Wind</div>
+                  <div class="badge ${windClass} rounded-pill px-2">${windDisp}</div>
+                  <div class="small text-muted ms-2">Gust</div>
+                  <div class="badge ${gustClass} rounded-pill px-2">${gustDisp}</div>
+                </div>
+              </button>`;
+          }).join('');
+        }
+      } catch (e) { forecastHtml = ''; }
+
       // Build banner HTML to embed inside the main container as a single colored dot (traffic-light style)
-      const bannerHtml = `
-        <div style="display:flex;align-items:center;justify-content:flex-end;">
-          <div class="conditions-dot ${conditionClass}" aria-hidden="true"></div>
-        </div>
-      `;
+      const bannerHtml = ``; // indicator dot removed; status alert shows overall condition
       
       const html = `
         <div class="weather-container">
@@ -769,45 +608,39 @@
           
           <div id="forecastsWrapper" style="display: block;">
             <div style="margin-top:8px;">
-              <canvas id="hourlyChart" height="240" style="width:100%;height:240px;display:block;background:rgba(255,255,255,0.02);"></canvas>
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <div class="small text-muted">Hourly (08:00–11:00)</div>
+                <div class="small text-muted">Wind / Rain</div>
+              </div>
+              <div id="hourlyChartSvg" style="width:100%;height:240px;display:block;background:transparent;"></div>
             </div>
 
-            <h3 class="forecast-header">5-Day Forecast</h3>
-            <div class="forecast-grid">
-            ${data.forecast.map(function(day, idx) {
-              const date = new Date(day.dt * 1000);
-              const isSelected = idx === selectedDayIndex;
-              const dayWindMph = day.wind.speed;
-              // compute day direction from allHourly (08:00-10:59) when available
-              let dayDeg = day.wind.deg || 0;
-              if (data.allHourly && data.allHourly.length) {
-                const dayKey = date.toISOString().slice(0,10);
-                const fh = data.allHourly.filter(h => {
-                  const d = new Date(h.dt * 1000);
-                  const key = d.toISOString().slice(0,10);
-                  const hr = d.getHours();
-                  return key === dayKey && hr >= 8 && hr < 11;
-                });
-                if (fh.length) dayDeg = avgDirection(fh.map(h => h.wind_deg || 0));
-              }
-              const cond = getConditions(dayWindMph, dayDeg);
-              return `
-                <div class="forecast-day ${cond.conditionClass}" onclick="selectDay(${idx})" style="cursor: pointer; ${isSelected ? 'outline: 2px solid #e1e4e1; outline-offset: -2px;' : ''}">
-                  <div class="day-name" style="font-size:0.65rem">${date.toLocaleDateString('en-US', { weekday: 'short' })}</div>
-                  <div class="forecast-dot ${cond.conditionClass}" aria-hidden="true"></div>
+              <div class="forecast-compact mt-3">
+                <h3 class="forecast-header">5-Day Forecast</h3>
+                <div class="list-group">
+                  ${forecastHtml}
                 </div>
-              `;
-            }).join('')}
-          </div>
+              </div>
 
         </div>
       `;
       
       container.innerHTML = html;
-      // Render hourly chart: use the selected day's hourly slice when possible
+      // Render hourly chart: use an appropriate hourly slice when possible
       try {
         let chartHourly = data.hourly;
-        if (selectedDayIndex !== -1 && data.allHourly && data.allHourly.length && data.forecast && data.forecast[selectedDayIndex]) {
+        if ((selectedDayIndex === -2 || selectedDayIndex === -3) && data.allHourly && data.allHourly.length) {
+          // compute same target day used above
+          const now = new Date();
+          const targetDay = selectedDayIndex === -2 ? 6 : 0;
+          const d = new Date(now);
+          let diff = (targetDay + 7 - d.getDay()) % 7;
+          if (diff === 0) diff = 7;
+          d.setDate(d.getDate() + diff);
+          const dayKey = d.toISOString().slice(0,10);
+          const filtered = data.allHourly.filter(h => new Date(h.dt * 1000).toISOString().slice(0,10) === dayKey);
+          if (filtered.length) chartHourly = filtered;
+        } else if (selectedDayIndex !== -1 && data.allHourly && data.allHourly.length && data.forecast && data.forecast[selectedDayIndex]) {
           const selectedDay = new Date(data.forecast[selectedDayIndex].dt * 1000);
           const dayKey = selectedDay.toISOString().slice(0,10);
           const filtered = data.allHourly.filter(h => new Date(h.dt * 1000).toISOString().slice(0,10) === dayKey);
@@ -818,131 +651,178 @@
         console.warn('Hourly chart render failed', e);
       }
 
+      // indicators handled in the compact forecast; no separate card
+
       // forecasts always visible (toggle removed)
     };
 
-    const renderHourlyChart = (hourly) => {
-      // Ensure Chart is available
-      if (typeof Chart === 'undefined') {
-        const parent = document.getElementById('hourlyChart')?.parentElement;
-        if (parent) parent.innerHTML = '<div style="color:#fff;padding:8px;background:#811;">Chart.js not loaded</div>';
-        return;
-      }
+    // App configuration: loaded from /config.json. Keep this empty here so config is editable
+    // from the external file; loadConfig merges the fetched values into this object.
+    let appConfig = {};
 
-      // Register annotation plugin if available under common globals
-      const plugin = window.ChartAnnotation || window.chartjsPluginAnnotation || window['chartjs-plugin-annotation'];
-      if (plugin) {
-        try { Chart.register(plugin); } catch (e) { console.warn('Annotation plugin register failed', e); }
-      }
-
-      const labels = hourly.map(h => {
-        const d = new Date(h.dt * 1000);
-        return d.getHours().toString().padStart(2,'0') + ':00';
-      });
-
-      const windConst = hourly.map(h => +(h.wind_speed).toFixed(1));
-      const windGust = hourly.map(h => +(h.wind_gust || h.wind_speed).toFixed(1));
-      const rain = hourly.map(h => +(h.rain && h.rain['1h'] ? h.rain['1h'] : 0));
-
-      const canvas = document.getElementById('hourlyChart');
-      if (!canvas) return;
-      canvas.style.display = 'block';
-      canvas.width = canvas.clientWidth;
-      canvas.height = 240;
-      const ctx = canvas.getContext('2d');
-
-      const config = {
-        type: 'bar',
-        data: {
-          labels: labels,
-          datasets: [
-            {
-              type: 'line',
-              label: 'Wind',
-              data: windConst,
-              borderColor: '#0b84ff',
-              backgroundColor: 'rgba(11,132,255,0.15)',
-              yAxisID: 'yWind',
-              tension: 0.3,
-              pointRadius: 2
-            },
-            {
-              type: 'line',
-              label: 'Gust',
-              data: windGust,
-              borderColor: '#ff7f0e',
-              backgroundColor: 'rgba(255,127,14,0.12)',
-              yAxisID: 'yWind',
-              tension: 0.3,
-              pointRadius: 2
-            },
-            {
-              type: 'bar',
-              label: 'Rain',
-              data: rain,
-              backgroundColor: 'rgba(45,85,200,0.6)',
-              yAxisID: 'yRain'
-            }
-          ]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          interaction: { mode: 'index', intersect: false },
-          stacked: false,
-          scales: {
-            x: { display: true, title: { display: true, text: 'Hour' } },
-            yWind: {
-              type: 'linear',
-              position: 'left',
-              title: { display: true, text: 'Wind (mph)' }
-            },
-            yRain: {
-              type: 'linear',
-              position: 'right',
-              title: { display: true, text: 'Rain (mm)' },
-              grid: { drawOnChartArea: false }
-            }
-          },
-          plugins: {
-            legend: { position: 'top' },
-            annotation: {
-              annotations: {
-                line_20: {
-                  type: 'line',
-                  scaleID: 'yWind',
-                  value: 20,
-                  borderColor: '#ff0000',
-                  borderWidth: 4,
-                  label: {
-                    enabled: true,
-                    content: '20 mph',
-                    position: 'start',
-                    font: { weight: 'bold' }
-                  }
-                }
-              }
-            }
-          }
-        }
-      };
-
+    const loadConfig = async () => {
       try {
-        // If an existing chart instance exists, destroy it first.
-        if (window.hourlyChart && typeof window.hourlyChart.destroy === 'function') {
-          try { window.hourlyChart.destroy(); } catch (e) { /* ignore */ }
-          window.hourlyChart = null;
-        }
-        window.hourlyChart = new Chart(ctx, config);
-      } catch (err) {
-        console.error('Chart render error', err);
-        const parent = canvas.parentElement;
-        if (parent) parent.insertAdjacentHTML('beforeend', '<div style="color:#fff;padding:8px;background:#811;margin-top:6px;">Chart render failed</div>');
+        const r = await fetch('/config.json');
+        if (!r.ok) return;
+        const j = await r.json();
+        appConfig = Object.assign(appConfig, j || {});
+        console.log('Config loaded', appConfig);
+      } catch (e) {
+        console.warn('Config load failed, using defaults', e);
       }
     };
+
+    const indicatorClassFor = (val, thresh) => {
+      if (val === null || val === undefined) return 'bg-secondary text-white';
+      if (val === 0 && thresh === appConfig.rain) return 'bg-success';
+      // rain: 0 => green, 1-amber threshold => amber, >amber => red
+      if (thresh === appConfig.rain) {
+        if (val === 0) return 'bg-success';
+        if (val <= thresh.amber) return 'bg-warning text-dark';
+        return 'bg-danger';
+      }
+      // wind thresholds: <green => green, <=amber => amber, >amber => red
+      if (val < thresh.green) return 'bg-success';
+      if (val <= thresh.amber) return 'bg-warning text-dark';
+      return 'bg-danger';
+    };
+
+    // indicators removed — forecast compact list displays rain/wind/gust badges
+
+    const renderHourlyChart = (hourly) => {
+      const container = document.getElementById('hourlyChartSvg');
+      if (!container) return;
+      container.innerHTML = '';
+      const w = container.clientWidth || 600;
+      const h = 240;
+      const pad = { left: 40, right: 10, top: 12, bottom: 28 };
+      const innerW = Math.max(10, w - pad.left - pad.right);
+      const innerH = Math.max(10, h - pad.top - pad.bottom);
+
+      const wind = hourly.map(it => +(it.wind_speed || 0));
+      const gust = hourly.map(it => +(it.wind_gust || it.wind_speed || 0));
+      const rain = hourly.map(it => +((it.rain && it.rain['1h']) || 0));
+      const labels = hourly.map(it => (new Date(it.dt * 1000)).getHours().toString().padStart(2,'0') + ':00');
+
+      const alertThreshold = (appConfig && appConfig.conditions && appConfig.conditions.marginal) ? Number(appConfig.conditions.marginal) : 20;
+      const yWindMax = Math.max(5, ...gust, alertThreshold);
+      const yRainMax = Math.max(0.1, ...rain);
+
+      const ns = 'http://www.w3.org/2000/svg';
+      const svg = document.createElementNS(ns,'svg');
+      svg.setAttribute('width', w);
+      svg.setAttribute('height', h);
+
+      // background
+      const bg = document.createElementNS(ns,'rect');
+      bg.setAttribute('x',0); bg.setAttribute('y',0); bg.setAttribute('width',w); bg.setAttribute('height',h); bg.setAttribute('fill','transparent');
+      svg.appendChild(bg);
+
+      const n = wind.length;
+      const stepX = n > 1 ? innerW / (n-1) : innerW;
+      const xs = Array.from({length:n}, (_,i) => pad.left + i*stepX);
+
+      // rain bars (at bottom)
+      for (let i=0;i<n;i++){
+        const val = rain[i];
+        const bw = Math.max(6, stepX*0.6);
+        const x = xs[i] - bw/2;
+        const barH = innerH * (val / yRainMax) * 0.6; // scale smaller
+        const y = pad.top + innerH - barH;
+        const rect = document.createElementNS(ns,'rect');
+        rect.setAttribute('x', x);
+        rect.setAttribute('y', y);
+        rect.setAttribute('width', bw);
+        rect.setAttribute('height', barH);
+        rect.setAttribute('fill', 'rgba(100,116,139,0.45)');
+        svg.appendChild(rect);
+      }
+
+      // wind line
+      const linePath = wind.map((v,i)=> `${xs[i]},${pad.top + innerH*(1 - v/yWindMax)}`).join(' L ');
+      const path = document.createElementNS(ns,'path');
+      path.setAttribute('d', 'M ' + linePath);
+      path.setAttribute('fill','none');
+      path.setAttribute('stroke','#0b84ff');
+      path.setAttribute('stroke-width','2');
+      svg.appendChild(path);
+
+      // gust dashed
+      const gustPath = gust.map((v,i)=> `${xs[i]},${pad.top + innerH*(1 - v/yWindMax)}`).join(' L ');
+      const p2 = document.createElementNS(ns,'path');
+      p2.setAttribute('d', 'M ' + gustPath);
+      p2.setAttribute('fill','none');
+      p2.setAttribute('stroke','#ff7f0e');
+      p2.setAttribute('stroke-width','1.5');
+      p2.setAttribute('stroke-dasharray','4,3');
+      svg.appendChild(p2);
+
+      // x labels: only render enough labels to avoid overlap
+      const approxLabelWidth = 40; // px per label target
+      const maxLabels = Math.max(1, Math.floor(innerW / approxLabelWidth));
+      const showEvery = Math.max(1, Math.ceil(n / maxLabels));
+      for (let i=0;i<n;i++){
+        if (i % showEvery !== 0 && i !== n-1) continue; // always show last label
+        const tx = document.createElementNS(ns,'text');
+        tx.setAttribute('x', xs[i]);
+        tx.setAttribute('y', pad.top + innerH + 16);
+        tx.setAttribute('fill','#475569');
+        tx.setAttribute('font-size', (innerW < 240 ? '9' : '10'));
+        tx.setAttribute('text-anchor','middle');
+        tx.textContent = labels[i];
+        svg.appendChild(tx);
+      }
+
+      // y axis labels (wind)
+      const yl = [0, Math.round(yWindMax/2), Math.round(yWindMax)];
+      yl.forEach((v,idx)=>{
+        const y = pad.top + innerH*(1 - v/yWindMax);
+        const t = document.createElementNS(ns,'text');
+        t.setAttribute('x', 8);
+        t.setAttribute('y', y+4);
+        t.setAttribute('fill','#475569');
+        t.setAttribute('font-size','10');
+        t.textContent = v + ' mph';
+        svg.appendChild(t);
+        const l = document.createElementNS(ns,'line');
+        l.setAttribute('x1', pad.left); l.setAttribute('x2', pad.left + innerW); l.setAttribute('y1', y); l.setAttribute('y2', y); l.setAttribute('stroke','rgba(16,24,40,0.04)'); l.setAttribute('stroke-width','1');
+        svg.appendChild(l);
+      });
+
+      // draw alert/reference line for wind (e.g., marginal threshold)
+      try {
+        if (!isNaN(alertThreshold)) {
+          const yAlert = pad.top + innerH * (1 - alertThreshold / yWindMax);
+          const al = document.createElementNS(ns,'line');
+          al.setAttribute('x1', pad.left);
+          al.setAttribute('x2', pad.left + innerW);
+          al.setAttribute('y1', yAlert);
+          al.setAttribute('y2', yAlert);
+          al.setAttribute('stroke', '#ff4d4f');
+          al.setAttribute('stroke-width', '1.5');
+          al.setAttribute('stroke-dasharray', '6,4');
+          svg.appendChild(al);
+          const at = document.createElementNS(ns,'text');
+          at.setAttribute('x', pad.left + innerW - 4);
+          at.setAttribute('y', yAlert - 4);
+          at.setAttribute('fill', '#ff4d4f');
+          at.setAttribute('font-size', '10');
+          at.setAttribute('text-anchor', 'end');
+          at.textContent = `${alertThreshold} mph`;
+          svg.appendChild(at);
+        }
+      } catch (e) { /* ignore */ }
+
+      container.appendChild(svg);
+    };
     
-    // Load on start
-    fetchWeather();
+    // Load on start when DOM is ready: load config, then weather/events
+    window.addEventListener('DOMContentLoaded', () => {
+      loadConfig().then(() => {
+        try { fetchWeather(); } catch (e) { console.warn('fetchWeather start failed', e); }
+      });
+      try { loadEvents(); } catch (e) { console.warn('loadEvents start failed', e); }
+    });
   </script>
 </body>
 </html>

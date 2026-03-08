@@ -1,0 +1,43 @@
+{
+  "_comment": "Configuration for thresholds and behaviour. Units: rain in mm per hour, wind/gust in mph. Adjust values to change colouring and chart marker.",
+  "rain": {
+    "_comment": "Rain thresholds (mm per hour). green = zero, amber = <= amber, red = > amber",
+    "green": 0,
+    "amber": 5
+  },
+  "wind": {
+    "_comment": "Wind (average) thresholds in mph. <green = green; <=amber = amber; >amber = red.",
+    "green": 5,
+    "amber": 20
+  },
+  "gust": {
+    "_comment": "Gust thresholds in mph, same rules as wind.",
+    "green": 5,
+    "amber": 20
+  },
+  "conditions": {
+    "_comment": "Condition thresholds used to compute overall condition displayed in the alert. Values are mph boundaries.",
+    "great": 5,
+    "good": 10,
+    "reasonable": 15,
+    "marginal": 20
+  }
+  ,
+  "colors": {
+    "_comment": "CSS class names used for condition badges and alert mapping. You can change these to different classes or hex-based classes if desired.",
+    "conditions": {
+      "Great": "conditions-great",
+      "Good": "conditions-good",
+      "Reasonable": "conditions-reasonable",
+      "Marginal": "conditions-marginal",
+      "Dont bother": "conditions-bad"
+    },
+    "alerts": {
+      "Great": "alert-success",
+      "Good": "alert-info",
+      "Reasonable": "alert-warning",
+      "Marginal": "alert-warning",
+      "Dont bother": "alert-danger"
+    }
+  }
+}

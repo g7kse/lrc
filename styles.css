@@ -1,0 +1,439 @@
+/*
+  styles.css
+  ---------
+  Central stylesheet for the LRC weather app.
+
+  Notes for quick edits:
+  - Color map for conditions lives in `config.json`. The CSS classes below
+    (conditions-great, conditions-good, etc.) control the visual appearance
+    of the badges/dots when mapped from configuration. Change colors here
+    if you prefer different shades or add new classes.
+  - Layout adjustments: tweak `.app-container`, `.weather-container` and
+    `.current-grid` to change spacing and responsive behaviour.
+  - Forecast badges: `.forecast-compact .badge` is monospace and padded
+    so numeric values line up. Change `min-width` or padding to alter width.
+  - Chart and SVG styles are inline-generated; color constants used there
+    are defined in the JS (`renderHourlyChart`) — update JS if you want
+    different SVG stroke colours.
+*/
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'IBM Plex Mono', monospace;
+  background-color: #ffffff;
+  color: #050505;
+  min-height: 100vh;
+  overflow: auto;
+  padding: 8px;
+}
+
+/* Local app container (use alongside Bootstrap's .container) */
+.app-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 12px;
+  flex-shrink: 0;
+}
+
+.logo {
+  width: 140px;
+  height: auto;
+  margin: 0 auto 6px;
+  display: block;
+}
+
+h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+input {
+  flex: 1;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid #4a5a69;
+  background-color: #aac6d2ff;
+  color: #e1e4e1;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.875rem;
+}
+
+input::placeholder {
+  color: #8a9aa9;
+}
+
+input:focus {
+  outline: none;
+  border-color: #6a7a89;
+}
+
+button {
+  padding: 8px 16px;
+  background-color: #aac6d2ff;
+  color: #050505;
+  border: none;
+  border-radius: 6px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 0.875rem;
+}
+
+button:hover {
+  opacity: 0.8;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.error {
+  margin-top: 4px;
+  padding: 4px 12px;
+  background-color: #5a3b3b;
+  color: #ffb3b3;
+  border-radius: 6px;
+  display: inline-block;
+  font-size: 0.75rem;
+}
+
+/* Make the main weather panel lighter on the white background */
+.weather-container {
+  background-color: #ffffff;
+  color: #050505;
+  border-radius: 10px;
+  padding: 12px;
+  box-shadow: 0 6px 18px rgba(16,24,40,0.08);
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  margin-bottom: 12px;
+  border: 1px solid rgba(0,0,0,0.06);
+}
+
+.current-weather {
+  background-color: transparent;
+  color: #000000;
+  border-radius: 8px;
+  padding: 8px 0;
+  margin-bottom: 8px;
+  flex-shrink: 0;
+}
+
+.location {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+.location h2 {
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.conditions-banner {
+  padding: 8px 8px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 8px;
+  flex-shrink: 0;
+}
+
+.conditions-great {
+  background-color: #2d5f2d;
+  color: #90ee90;
+}
+
+.conditions-good {
+  background-color: #4a5f2d;
+  color: #c8e690;
+}
+
+.conditions-reasonable {
+  background-color: #5f5f2d;
+  color: #ffff90;
+}
+
+.conditions-marginal {
+  background-color: #5f3d2d;
+  color: #ffb380;
+}
+
+.conditions-bad {
+  background-color: #5f2d2d;
+  color: #ff9090;
+}
+
+/*
+  CONDITION CLASSES
+  -----------------
+  The classes above (`conditions-great`, `conditions-good`, etc.) are applied
+  dynamically by the app based on thresholds from `config.json`. If you want
+  to use specific hex colours or add borders, edit these classes here.
+*/
+
+.current-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.metric {
+  text-align: center;
+}
+
+.metric-icon {
+  width: 20px;
+  height: 20px;
+  margin: 0 auto 4px;
+}
+
+.metric-label {
+  font-size: 0.625rem;
+  opacity: 0.8;
+  margin-bottom: 2px;
+}
+
+.metric-value {
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.metric-sub {
+  font-size: 0.625rem;
+  opacity: 0.7;
+  margin-top: 2px;
+}
+
+.forecast-header {
+  font-size: 0.8rem;
+  color: #000000;
+  font-weight: 700;
+  margin-bottom: 6px;
+  flex-shrink: 0;
+}
+
+.forecast-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 2px;
+  flex: 1;
+  align-content: start;
+}
+
+/* Header layout for location + embedded conditions banner */
+.current-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+#conditionsBanner { display:flex; align-items:center; }
+
+.conditions-dot {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+  border: 2px solid rgba(0,0,0,0.08);
+  flex-shrink: 0;
+}
+
+.forecast-day {
+  background-color: #ffffff;
+  border: 1px solid rgba(0,0,0,0.06);
+  border-radius: 6px;
+  padding: 6px 8px;
+  text-align: center;
+  min-height: 64px;
+}
+
+.forecast-dot {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  margin: 6px auto 4px;
+  border: 2px solid rgba(0,0,0,0.06);
+  box-shadow: 0 2px 6px rgba(16,24,40,0.08);
+}
+
+.day-name {
+  font-weight: 600;
+  font-size: 0.625rem;
+  margin-bottom: 2px;
+}
+
+.day-date {
+  font-size: 0.5rem;
+  opacity: 0.8;
+  margin-bottom: 4px;
+}
+
+.day-temp {
+  font-size: 1.125rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.day-detail {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  font-size: 0.5rem;
+  margin-bottom: 2px;
+}
+
+.day-detail svg {
+  width: 10px;
+  height: 10px;
+}
+
+.empty-state {
+  text-align: center;
+  margin-top: 48px;
+}
+
+.empty-icon {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 16px;
+  opacity: 0.5;
+}
+
+.empty-text {
+  font-size: 1.25rem;
+  opacity: 0.8;
+}
+
+.install-prompt {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #4a5a69;
+  padding: 16px 24px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  display: none;
+  align-items: center;
+  gap: 16px;
+  max-width: 90%;
+  z-index: 1000;
+}
+
+.install-prompt.show {
+  display: flex;
+}
+
+.install-prompt button {
+  white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+  .logo {
+    width: 60px;
+  }
+
+  h1 {
+    font-size: 1.25rem;
+  }
+
+  .current-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+  }
+
+  .metric-value {
+    font-size: 1rem;
+  }
+
+  .metric-icon {
+    width: 16px;
+    height: 16px;
+  }
+
+  .forecast-grid {
+    gap: 3px;
+  }
+
+  .forecast-day {
+    padding: 4px 2px;
+  }
+
+  .day-temp {
+    font-size: 1rem;
+  }
+
+  /* Stack header and banner on small screens; keep banner right-aligned */
+  .current-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  #conditionsBanner {
+    width: 100%;
+    margin-top: 8px;
+    justify-content: flex-end;
+  }
+
+  /* keep the dot small on mobile and don't expand it */
+  .conditions-dot {
+    width: 28px;
+    height: 28px;
+  }
+
+  .forecast-grid {
+    grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
+    gap: 6px;
+  }
+}
+
+.forecast-compact .list-group-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 10px;
+}
+.forecast-compact .badge {
+  min-width: 34px;
+  text-align: center;
+}
+
+.forecast-compact .badge {
+  font-family: 'IBM Plex Mono', monospace;
+  text-align: center;
+}
+
+/*
+  FORECAST BADGES
+  ---------------
+  Badges are monospace-padded so numbers align vertically. Change
+  `min-width` to increase space or use `px-2`/`px-3` classes in markup to
+  adjust internal padding. If you prefer leading spaces instead of zeros,
+  change JS formatting in `index.html` (the `fmt` function).
+*/
+
+@media (max-width: 576px) {
+  .current-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .metric { font-size: 0.9rem; }
+}

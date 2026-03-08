@@ -1,0 +1,5 @@
+# Sample events file: date, title, tag
+2026-03-14,Adult Weekend,Adult
+2026-03-15,Junior Weekend,Junior
+2026-04-10,Club Regatta,Regatta
+2026-05-01,Coaching Day,Training
