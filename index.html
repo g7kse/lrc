@@ -738,24 +738,89 @@
         svg.appendChild(rect);
       }
 
-      // wind line
-      const linePath = wind.map((v,i)=> `${xs[i]},${pad.top + innerH*(1 - v/yWindMax)}`).join(' L ');
-      const path = document.createElementNS(ns,'path');
-      path.setAttribute('d', 'M ' + linePath);
-      path.setAttribute('fill','none');
-      path.setAttribute('stroke','#0b84ff');
-      path.setAttribute('stroke-width','2');
-      svg.appendChild(path);
+      // Create smooth paths using Catmull-Rom -> Bezier conversion
+      const toYs = (arr) => arr.map(v => pad.top + innerH * (1 - v / yWindMax));
+      const windYs = toYs(wind);
+      const gustYs = toYs(gust);
 
-      // gust dashed
-      const gustPath = gust.map((v,i)=> `${xs[i]},${pad.top + innerH*(1 - v/yWindMax)}`).join(' L ');
-      const p2 = document.createElementNS(ns,'path');
-      p2.setAttribute('d', 'M ' + gustPath);
-      p2.setAttribute('fill','none');
-      p2.setAttribute('stroke','#ff7f0e');
-      p2.setAttribute('stroke-width','1.5');
-      p2.setAttribute('stroke-dasharray','4,3');
-      svg.appendChild(p2);
+      const catmullToBezier = (xsArr, ysArr) => {
+        if (xsArr.length === 0) return '';
+        const pts = xsArr.map((x,i) => [x, ysArr[i]]);
+        if (pts.length === 1) return `M ${pts[0][0]},${pts[0][1]}`;
+        let d = `M ${pts[0][0]},${pts[0][1]}`;
+        for (let i = 0; i < pts.length - 1; i++) {
+          const p0 = i === 0 ? pts[i] : pts[i - 1];
+          const p1 = pts[i];
+          const p2 = pts[i + 1];
+          const p3 = (i + 2 < pts.length) ? pts[i + 2] : p2;
+          const bp1x = p1[0] + (p2[0] - p0[0]) / 6;
+          const bp1y = p1[1] + (p2[1] - p0[1]) / 6;
+          const bp2x = p2[0] - (p3[0] - p1[0]) / 6;
+          const bp2y = p2[1] - (p3[1] - p1[1]) / 6;
+          d += ` C ${bp1x},${bp1y} ${bp2x},${bp2y} ${p2[0]},${p2[1]}`;
+        }
+        return d;
+      };
+
+      const windD = catmullToBezier(xs, windYs);
+      const gustD = catmullToBezier(xs, gustYs);
+
+      // defs and gradients (unique id per render)
+      const gid = 'g' + Math.random().toString(36).slice(2,8);
+      const defs = document.createElementNS(ns, 'defs');
+      const gradW = document.createElementNS(ns, 'linearGradient');
+      gradW.setAttribute('id', 'gradWind_' + gid);
+      gradW.setAttribute('x1', '0'); gradW.setAttribute('x2', '0'); gradW.setAttribute('y1', '0'); gradW.setAttribute('y2', '1');
+      const stop1 = document.createElementNS(ns, 'stop'); stop1.setAttribute('offset', '0%'); stop1.setAttribute('stop-color', '#0b84ff'); stop1.setAttribute('stop-opacity', '0.22');
+      const stop2 = document.createElementNS(ns, 'stop'); stop2.setAttribute('offset', '100%'); stop2.setAttribute('stop-color', '#0b84ff'); stop2.setAttribute('stop-opacity', '0.02');
+      gradW.appendChild(stop1); gradW.appendChild(stop2);
+
+      const gradG = document.createElementNS(ns, 'linearGradient');
+      gradG.setAttribute('id', 'gradGust_' + gid);
+      gradG.setAttribute('x1', '0'); gradG.setAttribute('x2', '0'); gradG.setAttribute('y1', '0'); gradG.setAttribute('y2', '1');
+      const s1 = document.createElementNS(ns, 'stop'); s1.setAttribute('offset', '0%'); s1.setAttribute('stop-color', '#ff7f0e'); s1.setAttribute('stop-opacity', '0.18');
+      const s2 = document.createElementNS(ns, 'stop'); s2.setAttribute('offset', '100%'); s2.setAttribute('stop-color', '#ff7f0e'); s2.setAttribute('stop-opacity', '0.02');
+      gradG.appendChild(s1); gradG.appendChild(s2);
+      defs.appendChild(gradW); defs.appendChild(gradG);
+      svg.appendChild(defs);
+
+      // area for wind (fill under the smoothed path)
+      if (windD) {
+        const areaD = windD + ` L ${pad.left + innerW},${pad.top + innerH} L ${pad.left},${pad.top + innerH} Z`;
+        const area = document.createElementNS(ns, 'path');
+        area.setAttribute('d', areaD);
+        area.setAttribute('fill', `url(#gradWind_${gid})`);
+        area.setAttribute('stroke', 'none');
+        svg.appendChild(area);
+      }
+
+      // smoothed wind line
+      if (windD) {
+        const path = document.createElementNS(ns, 'path');
+        path.setAttribute('d', windD);
+        path.setAttribute('fill', 'none');
+        path.setAttribute('stroke', '#0b84ff');
+        path.setAttribute('stroke-width', '2');
+        svg.appendChild(path);
+      }
+
+      // gust dashed (smoothed) with lighter area
+      if (gustD) {
+        const areaG = gustD + ` L ${pad.left + innerW},${pad.top + innerH} L ${pad.left},${pad.top + innerH} Z`;
+        const area2 = document.createElementNS(ns, 'path');
+        area2.setAttribute('d', areaG);
+        area2.setAttribute('fill', `url(#gradGust_${gid})`);
+        area2.setAttribute('stroke', 'none');
+        svg.appendChild(area2);
+
+        const p2 = document.createElementNS(ns,'path');
+        p2.setAttribute('d', gustD);
+        p2.setAttribute('fill','none');
+        p2.setAttribute('stroke','#ff7f0e');
+        p2.setAttribute('stroke-width','1.5');
+        p2.setAttribute('stroke-dasharray','4,3');
+        svg.appendChild(p2);
+      }
 
       // x labels: only render enough labels to avoid overlap
       const approxLabelWidth = 40; // px per label target
