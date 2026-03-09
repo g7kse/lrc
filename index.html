@@ -1,899 +1,466 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#3b4b59">
-  <meta name="description" content="Lakeland Rowing Club Weather">
-  <title>Lakeland Rowing Club Weather</title>
-  <link rel="manifest" href="/manifest.json">
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <!-- Bootstrap CSS -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Derwentwater Weather</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#12437b" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <script src="https://cdn.jsdelivr.net/npm/highcharts@11.1.0/highcharts.js"></script>
+
+    <style>
+        :root {
+            --navy:      #12437b;
+            --navy-dark: #0d2f5a;
+            --navy-mid:  #1a5298;
+            --accent:    #4a9fd4;
+            --card-bg:   #ffffff;
+            --border:    #d0dce8;
+            --text-muted:#6c8aa8;
+        }
+
+        body {
+            background: #eef3f8;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            color: #1a2a3a;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--navy-dark) 0%, var(--navy) 60%, var(--navy-mid) 100%);
+            border-bottom: 3px solid var(--accent);
+            box-shadow: 0 2px 12px rgba(0,0,0,0.25);
+        }
+
+        header h1 {
+            font-size: 1.4rem;
+            letter-spacing: 0.03em;
+            font-weight: 600;
+        }
+
+        #current-card {
+            border: 1px solid var(--border);
+            border-top: 4px solid var(--navy);
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(18,67,123,0.10);
+            background: var(--card-bg);
+        }
+
+        #current-card .card-title {
+            color: var(--navy);
+            font-weight: 700;
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            border-bottom: 2px solid var(--border);
+            padding-bottom: .5rem;
+            margin-bottom: 1rem;
+        }
+
+        #wind-dir-display { line-height: 1; color: var(--navy); font-size: 2rem !important; }
+        #wind-dir-label   { color: var(--text-muted); font-size: .75rem; font-weight: 600; }
+
+        .badge { font-size: .8rem; padding: .35em .7em; border-radius: 6px; font-weight: 600; }
+
+        #meteogram-wrap {
+            background: var(--card-bg);
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            padding: 0.5rem 0.25rem 0.25rem;
+            height: 280px;
+        }
+
+        .forecast-day {
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all .18s ease;
+            background: var(--card-bg);
+            text-align: center;
+            padding: .75rem .5rem;
+            user-select: none;
+            height: 100%;
+        }
+
+        .forecast-day:hover {
+            border-color: var(--accent);
+            box-shadow: 0 2px 8px rgba(18,67,123,0.13);
+            transform: translateY(-2px);
+        }
+
+        .forecast-day.selected {
+            border-color: var(--navy);
+            border-width: 2px;
+            background: linear-gradient(160deg, #e8f0f9 0%, #f5f8fc 100%);
+            box-shadow: 0 3px 10px rgba(18,67,123,0.18);
+        }
+
+        .forecast-day .day-name { font-weight: 700; font-size: .85rem; color: var(--navy); margin-bottom: .25rem; }
+        .forecast-day .day-icon { font-size: 1.7rem; line-height: 1.4; margin-bottom: .4rem; }
+
+        .metric-pill {
+            display: block;
+            font-size: .68rem;
+            font-weight: 600;
+            padding: .2em .5em;
+            border-radius: 5px;
+            margin-bottom: 3px;
+        }
+
+
+    </style>
 </head>
 <body>
-  <nav class="navbar navbar-expand-lg navbar-dark shadow-sm" style="background-color:#12437b;">
-    <div class="container-fluid">
-      <a class="navbar-brand d-flex align-items-center" href="#" onclick="selectDay(-1);return false;">
-        <img src="/icons/lrc_logo.png" alt="Lakeland Rowing Club Logo" width="40" height="40" class="me-2">
-        Derwentwater Weather
-      </a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu" aria-controls="navMenu" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navMenu">
-        <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-lg-center">
-          <li class="nav-item">
-            <a class="nav-link" href="#" onclick="selectDay(-1);return false;">Home</a>
-          </li>
-          <li class="nav-item">
-            <button class="btn btn-outline-primary ms-2" id="adultWeekendBtn" onclick="selectWeekend('adult')">Adult Weekend</button>
-          </li>
-          <li class="nav-item">
-            <button class="btn btn-outline-secondary ms-2" id="juniorWeekendBtn" onclick="selectWeekend('junior')">Junior Weekend</button>
-          </li>
-        </ul>
-      </div>
-    </div>
-  </nav>
-
-  <div class="app-container container my-3">
-    <div class="row g-3">
-      <div class="col-lg-8">
-        <div id="weatherContainer"></div>
-        <div id="emptyState" class="empty-state" style="display: none;">
-          <svg class="empty-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"></path>
-          </svg>
-          <p class="empty-text">Loading weather...</p>
+    <header class="py-3">
+        <div class="container d-flex align-items-center">
+            <img src="/icons/lrc_icon-192.png" alt="logo" width="40" height="40" class="me-2"
+                 onerror="this.style.display='none'">
+            <h1 class="text-white m-0">Derwentwater Weather</h1>
         </div>
-      </div>
+    </header>
 
-      <div class="col-lg-4">
-        <div id="statusAlert" class="alert alert-secondary mb-3" role="alert">
-          Loading status...
+    <main class="container my-4">
+
+        <!-- Current conditions card -->
+        <div id="current-card" class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">
+                    Current Conditions
+                    <span style="font-weight:400;text-transform:none;font-size:.72rem;color:var(--text-muted);margin-left:8px;">morning window 08:00–11:00</span>
+                </h5>
+                <div class="row g-3">
+                    <!-- Left: icon + wind arrow + badges in one row -->
+                    <div class="col-md-4 d-flex align-items-center gap-3">
+                        <div id="weather-icon-display" class="fs-1" style="flex-shrink:0;"></div>
+                        <div class="text-center" style="flex-shrink:0;">
+                            <div id="wind-dir-display" style="display:inline-block;transform:rotate(0deg);">↑</div>
+                            <div id="wind-dir-label">N</div>
+                        </div>
+                        <div class="d-flex flex-column gap-1">
+                            <span id="badge-rain"  class="badge">Rain: –</span>
+                            <span id="badge-wind"  class="badge">Wind: –</span>
+                            <span id="badge-gusts" class="badge">Gusts: –</span>
+                        </div>
+                    </div>
+                    <!-- Right: meteogram -->
+                    <div class="col-md-8">
+                        <div id="meteogram-wrap">
+                            <div id="daylightChart" style="width:100%;height:100%;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="card" id="calendarCard">
-          <div class="card-header d-flex justify-content-between align-items-center">
-            <strong>Events</strong>
-            <small id="eventsCount" class="text-muted">—</small>
-          </div>
-          <div class="card-body p-2" id="eventsList">
-            <div class="text-muted small">Loading events...</div>
-          </div>
+
+        <!-- 4-day forecast strip -->
+        <div id="forecast-strip" class="row row-cols-4 g-2">
+            <!-- injected by JS -->
         </div>
-        
-      </div>
-    </div>
-  </div>
-  
-  <!-- Bootstrap JS (optional components) -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    </main>
 
- <script>
-    // Load events from /events.txt (expected CSV-like: YYYY-MM-DD,Title,tag)
-    const loadEvents = async () => {
-      const listEl = document.getElementById('eventsList');
-      const countEl = document.getElementById('eventsCount');
-      try {
-        const resp = await fetch('/events.txt');
-        if (!resp.ok) throw new Error('No events file');
-        const txt = await resp.text();
-        const lines = txt.split(/\r?\n/).map(l => l.trim()).filter(l => l && !l.startsWith('#'));
-        const events = lines.map(l => {
-          const parts = l.split(',');
-          return { date: parts[0]?.trim(), title: parts[1]?.trim(), tag: parts[2]?.trim() };
-        }).filter(e => e.date && e.title);
-
-        if (!events.length) {
-          listEl.innerHTML = '<div class="text-muted small">No events found</div>';
-          countEl.textContent = '0';
-          return;
-        }
-
-        // sort ascending
-        events.sort((a,b)=> new Date(a.date) - new Date(b.date));
-        countEl.textContent = events.length;
-
-        const html = events.map(e => {
-          const d = new Date(e.date);
-          const pretty = isNaN(d.getTime()) ? e.date : d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
-          const badge = e.tag ? `<span class="badge bg-secondary ms-2">${e.tag}</span>` : '';
-          return `<div class="d-flex justify-content-between align-items-center py-1 border-bottom">
-                    <div><strong>${pretty}</strong> <div class="small text-muted">${e.title}</div></div>
-                    <div>${badge}</div>
-                  </div>`;
-        }).join('');
-        listEl.innerHTML = html;
-      } catch (err) {
-        listEl.innerHTML = '<div class="text-muted small">events file not found</div>';
-        if (countEl) countEl.textContent = '—';
-      }
-    };
-    let deferredPrompt;
-    let weatherData = null;
-    let selectedDayIndex = -1; // -1 means current weather
-    
-    // Weather functionality
-    // Wind speeds from the chosen Open-Meteo endpoint are requested in mph
-    // so we treat values as mph throughout.
-    
-    const getWindDirection = (deg) => {
-      const directions = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
-      return directions[Math.round(deg / 45) % 8];
-    };
-    
-    const getConditions = (windSpeedMph, windDeg) => {
-      let condition, conditionClass, location;
-      const th = (window.appConfig && window.appConfig.conditions) ? window.appConfig.conditions : { great:5, good:10, reasonable:15, marginal:20 };
-
-      if (windSpeedMph < th.great) {
-        condition = 'Great';
-      } else if (windSpeedMph < th.good) {
-        condition = 'Good';
-      } else if (windSpeedMph < th.reasonable) {
-        condition = 'Reasonable';
-      } else if (windSpeedMph < th.marginal) {
-        condition = 'Marginal';
-      } else {
-        condition = 'Dont bother';
-      }
-
-      // pick the configured CSS class for this condition if provided
-      try {
-        const cmap = (window.appConfig && window.appConfig.colors && window.appConfig.colors.conditions) ? window.appConfig.colors.conditions : null;
-        conditionClass = cmap && cmap[condition] ? cmap[condition] : (condition === 'Great' ? 'conditions-great' : (condition === 'Good' ? 'conditions-good' : (condition === 'Reasonable' ? 'conditions-reasonable' : (condition === 'Marginal' ? 'conditions-marginal' : 'conditions-bad'))));
-      } catch (e) {
-        conditionClass = (condition === 'Great' ? 'conditions-great' : (condition === 'Good' ? 'conditions-good' : (condition === 'Reasonable' ? 'conditions-reasonable' : (condition === 'Marginal' ? 'conditions-marginal' : 'conditions-bad'))));
-      }
-
-      // Determine location based on wind direction
-      const direction = getWindDirection(windDeg);
-      if (direction === 'E' || direction === 'NE' || direction === 'SE') {
-        location = 'East Shore';
-      } else if (direction === 'W' || direction === 'NW' || direction === 'SW') {
-        location = 'West Shore';
-      } else if (direction === 'S') {
-        location = 'The Bay';
-      } else {
-        location = "Its up to you";
-      }
-
-      return { condition, conditionClass, location };
+    <script>
+    /* ================================================================
+       Config & thresholds
+    ================================================================ */
+    const CONFIG = {
+        url: "https://api.open-meteo.com/v1/forecast?latitude=54.594723&longitude=-3.14536&hourly=temperature_2m,wind_speed_10m,wind_gusts_10m,winddirection_10m,precipitation,weathercode&wind_speed_unit=mph&timezone=auto",
+        thresholds: {
+            wind:  { green: 10, amber: 18 },
+            gusts: { green: 15, amber: 25 },
+            rain:  { green: 1,  amber: 5  }
+        },
+        morningWindow: { startHour: 8, endHour: 11 }
     };
 
-    const mapConditionToAlertClass = (condition) => {
-      try {
-        const amap = (window.appConfig && window.appConfig.colors && window.appConfig.colors.alerts) ? window.appConfig.colors.alerts : null;
-        if (amap && amap[condition]) return amap[condition];
-      } catch (e) {
-        // fallthrough to defaults
-      }
-      switch (condition) {
-        case 'Great': return 'alert-success';
-        case 'Good': return 'alert-success';
-        case 'Reasonable': return 'alert-warning';
-        case 'Marginal': return 'alert-warning';
-        case 'Dont bother': return 'alert-danger';
-        default: return 'alert-secondary';
-      }
-    };
-    
-    const fetchWeather = async () => {
-      const errorEl = document.getElementById('error');
-      const weatherContainer = document.getElementById('weatherContainer');
-      const emptyState = document.getElementById('emptyState');
-      
-      selectedDayIndex = -1; // Reset to current weather
-      
-      try {
-        // Use the user-provided Open-Meteo URL (wind in mph)
-        emptyState.style.display = 'block';
-        const url = 'https://api.open-meteo.com/v1/forecast?latitude=54.594723&longitude=-3.14536&hourly=temperature_2m,wind_speed_10m,wind_gusts_10m,winddirection_10m,precipitation&wind_speed_unit=mph&timezone=auto';
-        const resp = await fetch(url);
-        if (resp.ok) {
-          const j = await resp.json();
-          const nowMs = Date.now();
+    /* ================================================================
+       Helpers
+    ================================================================ */
+    const STATUS_BG   = { success:'#d1fae5', warning:'#fff3cd', danger:'#fee2e2' };
+    const STATUS_TEXT = { success:'#065f46', warning:'#92400e', danger:'#991b1b' };
 
-          // find current hourly index (first entry at or after now)
-          const times = j.hourly && j.hourly.time ? j.hourly.time : [];
-          let idx = times.findIndex(t => new Date(t).getTime() >= nowMs);
-          if (idx < 0) idx = 0;
+    function getStatusColor(value, {green, amber} = {}) {
+        if (green !== undefined && value <= green) return 'success';
+        if (amber !== undefined && value <= amber) return 'warning';
+        return 'danger';
+    }
 
-          const getVal = (arr, i) => (Array.isArray(arr) && arr[i] !== undefined) ? arr[i] : 0;
+    function degreeToCompass(num) {
+        const arr = ["N","NNE","NE","ENE","E","ESE","SE","SSE","S","SSW","SW","WSW","W","WNW","NW","NNW"];
+        return arr[Math.floor((num / 22.5) + 0.5) % 16];
+    }
 
-          const current = {
-            name: 'Keswick',
-            sys: { country: 'GB' },
-            main: { temp: getVal(j.hourly.temperature_2m, idx), humidity: 0 },
-            weather: [{ description: '' }],
-            rain: { '1h': getVal(j.hourly.precipitation, idx) },
-            wind: { speed: getVal(j.hourly.wind_speed_10m, idx), deg: getVal(j.hourly.winddirection_10m, idx), gust: getVal(j.hourly.wind_gusts_10m, idx) }
-          };
+    function getWeatherIcon(code) {
+        if (code === 0)               return '☀️';
+        if (code >= 1 && code <= 3)   return '⛅';
+        if (code >= 45 && code <= 48) return '🌫️';
+        if (code >= 51 && code <= 57) return '🌦️';
+        if (code >= 61 && code <= 67) return '🌧️';
+        if (code >= 71 && code <= 77) return '❄️';
+        if (code >= 80 && code <= 82) return '🌦️';
+        if (code >= 85 && code <= 86) return '❄️';
+        if (code >= 95 && code <= 99) return '⛈️';
+        return '☁️';
+    }
 
-          // Build hourly array (next 12 hours)
-          const hourly = [];
-          for (let i = idx; i < Math.min(times.length, idx + 12); i++) {
-            hourly.push({
-              dt: Math.floor(new Date(times[i]).getTime() / 1000),
-              wind_speed: getVal(j.hourly.wind_speed_10m, i),
-              wind_gust: getVal(j.hourly.wind_gusts_10m, i) || getVal(j.hourly.wind_speed_10m, i),
-              wind_deg: getVal(j.hourly.winddirection_10m, i),
-              rain: { '1h': getVal(j.hourly.precipitation, i) }
-            });
-          }
-
-          // Aggregate simple 5-day forecast from hourly (skip today)
-          const byDay = {};
-          for (let i = 0; i < times.length; i++) {
-            const d = new Date(times[i]);
-            const dayKey = d.toISOString().slice(0,10); // YYYY-MM-DD
-            if (!byDay[dayKey]) byDay[dayKey] = { temps: [], prec: 0, wind: [], gust: [] };
-            byDay[dayKey].temps.push(getVal(j.hourly.temperature_2m, i));
-            byDay[dayKey].prec += getVal(j.hourly.precipitation, i);
-            byDay[dayKey].wind.push(getVal(j.hourly.wind_speed_10m, i));
-            byDay[dayKey].gust.push(getVal(j.hourly.wind_gusts_10m, i) || getVal(j.hourly.wind_speed_10m, i));
-          }
-
-          const todayKey = new Date().toISOString().slice(0,10);
-          const dayKeys = Object.keys(byDay).filter(k => k !== todayKey).slice(0,5);
-          const forecast = dayKeys.map(k => {
-            const entry = byDay[k];
-            const maxTemp = Math.max(...entry.temps);
-            const maxWind = Math.max(...entry.wind);
-            const maxGust = Math.max(...entry.gust);
-            const precSum = Math.round(entry.prec * 100) / 100;
-            const dt = Math.floor(new Date(k + 'T12:00:00').getTime() / 1000);
-            return { dt, main: { temp: maxTemp }, rain: { '3h': precSum }, wind: { speed: maxWind, deg: 0, gust: maxGust } };
-          });
-
-          weatherData = { current, forecast, hourly };
-          // store full hourly series so we can show per-day hourly charts
-          const allHourly = times.map((t, i) => ({
-            dt: Math.floor(new Date(t).getTime() / 1000),
-            wind_speed: getVal(j.hourly.wind_speed_10m, i),
-            wind_gust: getVal(j.hourly.wind_gusts_10m, i) || getVal(j.hourly.wind_speed_10m, i),
-            wind_deg: getVal(j.hourly.winddirection_10m, i),
-            rain: { '1h': getVal(j.hourly.precipitation, i) }
-          }));
-          weatherData = { current, forecast, hourly, allHourly };
-          emptyState.style.display = 'none';
-          displayWeather(weatherData);
-          return;
-        } else {
-          console.warn('Open-Meteo returned', resp.status);
-          weatherData = null;
-        }
-      } catch (err) {
-        console.warn('Open-Meteo fetch failed', err);
-        weatherData = null;
-      }
-
-      // Fallback: if no real data supplied, show a small demo so UI isn't empty.
-      if (!weatherData) {
-        const now = Math.floor(Date.now()/1000);
-        const demoHourly = [];
-        for (let i=0;i<12;i++) {
-          // generate plausible mph values for demo
-          const ws = +(5 + Math.abs(Math.sin(i/2))*10 + (Math.random()*2-1)).toFixed(1);
-          const gust = +(ws * (1.2 + Math.random()*0.6)).toFixed(1);
-          const rainVal = Math.random() < 0.25 ? +(Math.random()*3).toFixed(2) : 0;
-          demoHourly.push({ dt: now + i*3600, wind_speed: ws, wind_gust: gust, wind_deg: Math.floor(Math.random()*360), rain: {'1h': rainVal} });
-        }
-
-        weatherData = {
-          current: {
-            name: 'Keswick', sys: { country: 'GB' }, main: { temp: 12.5, humidity: 72 },
-            weather: [{ description: 'partly cloudy' }], rain: {'1h': 0.2}, wind: { speed: 8.6, deg: 225, gust: 12 }
-          },
-          forecast: [
-            { dt: now + 86400, main: { temp: 14.2 }, rain: {'3h': 1.5}, wind: { speed: 12.1, deg: 180, gust: 14 } },
-            { dt: now + 172800, main: { temp: 11.8 }, rain: {'3h': 0}, wind: { speed: 6.2, deg: 270, gust: 8 } },
-            { dt: now + 259200, main: { temp: 13.5 }, rain: {'3h': 2.8}, wind: { speed: 15.3, deg: 135, gust: 20 } },
-            { dt: now + 345600, main: { temp: 15.1 }, rain: {'3h': 0.5}, wind: { speed: 9.9, deg: 90, gust: 12 } },
-            { dt: now + 432000, main: { temp: 16.3 }, rain: {'3h': 0}, wind: { speed: 7.8, deg: 315, gust: 10 } }
-          ],
-          hourly: demoHourly,
-          allHourly: demoHourly
-        };
-
-        emptyState.style.display = 'none';
-        displayWeather(weatherData);
-      }
-    };
-    
-    const selectDay = (index) => {
-      selectedDayIndex = index;
-      displayWeather(weatherData);
-    };
-
-    // mode: 'adult' => Saturday 08:00-10:59, 'junior' => Sunday 10:00-12:59
-    const selectWeekend = (mode) => {
-      if (!weatherData || !weatherData.allHourly) {
-        alert('Weather data not loaded yet');
-        return;
-      }
-      if (mode === 'adult') {
-        selectedDayIndex = -2;
-      } else {
-        selectedDayIndex = -3;
-      }
-      displayWeather(weatherData);
-    };
-    
-    const drawWindGraph = (windSpeedMph, windDeg) => {
-      const canvas = document.createElement('canvas');
-      canvas.width = 120;
-      canvas.height = 120;
-      const ctx = canvas.getContext('2d');
-      
-      const centerX = 60;
-      const centerY = 60;
-      const radius = 45;
-      
-      // Draw circle background
-      ctx.strokeStyle = '#000000';
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
-      ctx.stroke();
-      
-      // Draw cardinal directions
-      ctx.fillStyle = '#000000';
-      ctx.font = '10px "IBM Plex Mono"';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText('N', centerX, centerY - radius - 10);
-      ctx.fillText('S', centerX, centerY + radius + 10);
-      ctx.fillText('E', centerX + radius + 10, centerY);
-      ctx.fillText('W', centerX - radius - 10, centerY);
-      
-      // Draw wind arrow
-      const angleRad = (windDeg - 90) * Math.PI / 180;
-      const arrowLength = radius * 0.7;
-      const endX = centerX + Math.cos(angleRad) * arrowLength;
-      const endY = centerY + Math.sin(angleRad) * arrowLength;
-      
-      ctx.strokeStyle = '#000000';
-      ctx.fillStyle = '#000000';
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.moveTo(centerX, centerY);
-      ctx.lineTo(endX, endY);
-      ctx.stroke();
-      
-      // Draw arrowhead
-      const headLen = 10;
-      const angle1 = angleRad + Math.PI / 6;
-      const angle2 = angleRad - Math.PI / 6;
-      ctx.beginPath();
-      ctx.moveTo(endX, endY);
-      ctx.lineTo(endX - headLen * Math.cos(angle1), endY - headLen * Math.sin(angle1));
-      ctx.lineTo(endX - headLen * Math.cos(angle2), endY - headLen * Math.sin(angle2));
-      ctx.closePath();
-      ctx.fill();
-      
-      return canvas.toDataURL();
-    };
-    
-    const displayWeather = (data) => {
-      const container = document.getElementById('weatherContainer');
-      const conditionsBanner = document.getElementById('conditionsBanner');
-      
-      // Determine which day to show in detail
-      let detailData, detailLabel;
-      // Home / current
-      if (selectedDayIndex === -1) {
-        detailData = data.current;
-        detailLabel = 'Current Weather';
-      // Adult / Junior weekend special selections
-      } else if (selectedDayIndex === -2 || selectedDayIndex === -3) {
-        // compute next upcoming Saturday (6) for adult, Sunday (0) for junior
-        const now = new Date();
-        const targetDay = selectedDayIndex === -2 ? 6 : 0;
-        const d = new Date(now);
-        let diff = (targetDay + 7 - d.getDay()) % 7;
-        if (diff === 0) diff = 7; // choose next week if today is the target
-        d.setDate(d.getDate() + diff);
-        const dayKey = d.toISOString().slice(0,10);
-        const startHour = selectedDayIndex === -2 ? 8 : 10;
-        const endHour = selectedDayIndex === -2 ? 11 : 13; // exclusive
-
-        const windowHours = (data.allHourly || []).filter(h => {
-          const dd = new Date(h.dt * 1000);
-          const key = dd.toISOString().slice(0,10);
-          const hr = dd.getHours();
-          return key === dayKey && hr >= startHour && hr < endHour;
-        });
-
-        // compute aggregated values from the window
-        const avg = (arr) => arr.length ? arr.reduce((s, v) => s + v, 0) / arr.length : 0;
-        const avgDirection = (degArr) => {
-          if (!degArr || !degArr.length) return 0;
-          let sx = 0, sy = 0;
-          degArr.forEach(dd => { const r = dd * Math.PI / 180; sx += Math.cos(r); sy += Math.sin(r); });
-          let a = Math.atan2(sy, sx) * 180 / Math.PI; if (a < 0) a += 360; return Math.round(a);
-        };
-
-        if (windowHours.length) {
-          const tempAvg = +(avg(windowHours.map(h => h.temp || 0))).toFixed(1);
-          const windAvg = +(avg(windowHours.map(h => h.wind_speed || 0))).toFixed(1);
-          const gustMax = +(Math.max(...windowHours.map(h => h.wind_gust || h.wind_speed || 0))).toFixed(1);
-          const degAvg = avgDirection(windowHours.map(h => h.wind_deg || 0));
-          const rainSum = +(windowHours.reduce((s,h) => s + ((h.rain && h.rain['1h']) || 0), 0)).toFixed(2);
-          detailData = { main: { temp: tempAvg, humidity: 0 }, rain: { '3h': rainSum }, wind: { speed: windAvg, deg: degAvg, gust: gustMax }, weather: [{ description: '' }] };
-        } else {
-          // fallback: try to find a forecast entry for that day
-          const found = (data.forecast || []).find(f => {
-            const k = new Date(f.dt * 1000).toISOString().slice(0,10);
-            return k === dayKey;
-          });
-          if (found) {
-            detailData = found;
-          } else {
-            detailData = { main: { temp: 0, humidity: 0 }, rain: { '3h': 0 }, wind: { speed: 0, deg: 0, gust: 0 }, weather: [{ description: '' }] };
-          }
-        }
-        const prettyDay = d.toLocaleDateString('en-GB', { weekday: 'long', month: 'short', day: 'numeric' });
-        detailLabel = (selectedDayIndex === -2 ? 'Adult Weekend — ' : 'Junior Weekend — ') + prettyDay + ` ${startHour}:00-${(endHour-1)}:59`;
-      } else {
-        detailData = data.forecast[selectedDayIndex];
-        const date = new Date(detailData.dt * 1000);
-        detailLabel = date.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
-      }
-      
-      // Helpers to compute averages (circular mean for direction)
-      const avg = (arr) => arr.length ? arr.reduce((s, v) => s + v, 0) / arr.length : 0;
-      const avgDirection = (degArr) => {
-        if (!degArr || !degArr.length) return 0;
-        let sx = 0, sy = 0;
-        degArr.forEach(d => {
-          const r = d * Math.PI / 180;
-          sx += Math.cos(r);
-          sy += Math.sin(r);
-        });
-        let a = Math.atan2(sy, sx) * 180 / Math.PI;
-        if (a < 0) a += 360;
-        return Math.round(a);
-      };
-
-      // Default values from detailData
-      let windSpeedMph = detailData.wind.speed || 0;
-      let windGustMph = detailData.wind.gust ? detailData.wind.gust : (windSpeedMph * 1.5);
-      let windDeg = detailData.wind.deg || 0;
-
-      // If a forecast day is selected, derive metrics from the day's 08:00-10:59 hourly window
-      if (selectedDayIndex !== -1 && data.allHourly && data.allHourly.length && data.forecast && data.forecast[selectedDayIndex]) {
-        const selDay = new Date(data.forecast[selectedDayIndex].dt * 1000);
-        const dayKey = selDay.toISOString().slice(0,10);
-        const windowHours = data.allHourly.filter(h => {
-          const d = new Date(h.dt * 1000);
-          const key = d.toISOString().slice(0,10);
-          const hr = d.getHours();
-          return key === dayKey && hr >= 8 && hr < 11;
-        });
-        if (windowHours.length) {
-          windSpeedMph = +(avg(windowHours.map(h => h.wind_speed))).toFixed(1);
-          windGustMph = +(Math.max(...windowHours.map(h => h.wind_gust || h.wind_speed))).toFixed(1);
-          windDeg = avgDirection(windowHours.map(h => (h.wind_deg !== undefined ? h.wind_deg : (h.wind_dir_deg || 0))));
-          // if hourly entries don't contain explicit deg, try to use forecast deg if present
-          if (!windDeg && data.forecast[selectedDayIndex].wind && data.forecast[selectedDayIndex].wind.deg) {
-            windDeg = data.forecast[selectedDayIndex].wind.deg;
-          }
-        }
-      }
-
-      // Use gusting value to decide conditions/banner
-      const { condition, conditionClass, location } = getConditions(windGustMph, windDeg);
-      const windGraphUrl = drawWindGraph(windSpeedMph, windDeg);
-
-      // Update top-right status alert to match main condition
-      try {
-        const statusEl = document.getElementById('statusAlert');
-        if (statusEl) {
-          const cls = mapConditionToAlertClass(condition);
-          statusEl.className = 'alert ' + cls + ' mb-3';
-          statusEl.innerHTML = `<strong>${condition}</strong> — ${location}`;
-        }
-      } catch (e) { /* ignore */ }
-
-      // Build a compact forecast table (date left, then Rain / Wind / Gust)
-      let forecastHtml = '';
-      try {
-        if (data.forecast && data.forecast.length) {
-          const rows = data.forecast.slice(0,5).map(function(day, idx) {
-            const date = new Date(day.dt * 1000);
-            const pretty = date.toLocaleDateString('en-GB', { weekday: 'short', day: '2-digit', month: 'short' });
-
-            // sample 09:00 hour if available
-            let hourSample = null;
-            if (data.allHourly && data.allHourly.length) {
-              const key = date.toISOString().slice(0,10);
-              const matched = data.allHourly.filter(h => {
-                const d = new Date(h.dt * 1000);
-                return d.toISOString().slice(0,10) === key && d.getHours() === 9;
-              });
-              if (matched.length) hourSample = matched[0];
+    function computeMorningStats(dayData, windowStart, windowEnd) {
+        let windMax = 0, gustMax = 0, rainSum = 0;
+        dayData.time.forEach((t, i) => {
+            const hour = new Date(t).getHours();
+            if (hour >= windowStart && hour < windowEnd) {
+                windMax  = Math.max(windMax,  dayData.wind[i]);
+                gustMax  = Math.max(gustMax,  dayData.gusts[i]);
+                rainSum += dayData.rain[i];
             }
+        });
+        return { windMax, gustMax, rainSum };
+    }
 
-            const rainVal = hourSample ? ((hourSample.rain && hourSample.rain['1h']) || 0) : ((day.rain && (day.rain['3h'] || day.rain['1h'])) ? (day.rain['3h'] || day.rain['1h']) : 0);
-            const windVal = hourSample ? (hourSample.wind_speed || 0) : ((day.wind && day.wind.speed) ? day.wind.speed : 0);
-            const gustVal = hourSample ? (hourSample.wind_gust || hourSample.wind_speed || 0) : ((day.wind && (day.wind.gust || day.wind.speed)) ? (day.wind.gust || day.wind.speed) : 0);
+    function computeDaylightStats(dayData) {
+        const out = { time:[], wind:[], gusts:[], rain:[] };
+        dayData.time.forEach((t, i) => {
+            const hour = new Date(t).getHours();
+            if (hour >= 6 && hour <= 18) {
+                out.time.push(new Date(t).toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' }));
+                out.wind.push(dayData.wind[i]);
+                out.gusts.push(dayData.gusts[i]);
+                out.rain.push(dayData.rain[i]);
+            }
+        });
+        return out;
+    }
 
-            const rainClass = indicatorClassFor(rainVal, appConfig.rain);
-            const windClass = indicatorClassFor(windVal, appConfig.wind);
-            const gustClass = indicatorClassFor(gustVal, appConfig.wind);
-
-            const palette = {
-              'bg-success': '#198754',
-              'bg-warning': '#ffc107',
-              'bg-danger': '#dc3545',
-              'bg-secondary': '#6c757d',
-              'bg-info': '#0dcaf0'
-            };
-            const colorFor = (cls) => {
-              if (!cls) return '#6c757d';
-              for (const k of Object.keys(palette)) if (cls.indexOf(k) >= 0) return palette[k];
-              return '#6c757d';
-            };
-            const rainColor = colorFor(rainClass);
-            const windColor = colorFor(windClass);
-            const gustColor = colorFor(gustClass);
-
-            const rainBadge = `<span class="badge-square" aria-hidden="true" style="background:${rainColor};border:1px solid rgba(0,0,0,0.06)"></span><span class="visually-hidden">Rain: ${Math.round(rainVal)} mm</span>`;
-            const windBadge = `<span class="badge-square" aria-hidden="true" style="background:${windColor};border:1px solid rgba(0,0,0,0.06)"></span><span class="visually-hidden">Wind: ${Math.round(windVal)} mph</span>`;
-            const gustBadge = `<span class="badge-square" aria-hidden="true" style="background:${gustColor};border:1px solid rgba(0,0,0,0.06)"></span><span class="visually-hidden">Gust: ${Math.round(gustVal)} mph</span>`;
-
-            return `<tr onclick="selectDay(${idx})" class="forecast-row" role="button"><td><strong>${pretty}</strong></td><td class="text-end">${rainBadge}</td><td class="text-end">${windBadge}</td><td class="text-end">${gustBadge}</td></tr>`;
-          });
-          forecastHtml = `<table class="table table-borderless forecast-table mb-0"><thead><tr><th></th><th class="text-muted small text-end">Rain</th><th class="text-muted small text-end">Wind</th><th class="text-muted small text-end">Gust</th></tr></thead><tbody>` + rows.join('') + '</tbody></table>';
+    /* ================================================================
+       Highcharts global theme
+    ================================================================ */
+    Highcharts.setOptions({
+        chart: {
+            style: { fontFamily:"'Segoe UI', system-ui, sans-serif" },
+            backgroundColor: 'transparent',
+            animation: { duration: 400 }
+        },
+        title:   { style: { display:'none' } },
+        credits: { enabled: false },
+        legend: {
+            itemStyle: { color:'#1a2a3a', fontWeight:'600', fontSize:'11px' },
+            borderWidth: 0,
+            backgroundColor: 'transparent'
+        },
+        tooltip: {
+            backgroundColor: '#12437b',
+            borderColor: '#4a9fd4',
+            borderRadius: 8,
+            style: { color:'#fff', fontSize:'12px' },
+            shared: true
         }
-      } catch (e) { forecastHtml = ''; }
-
-      // Build banner HTML to embed inside the main container as a single colored dot (traffic-light style)
-      const bannerHtml = ``; // indicator dot removed; status alert shows overall condition
-      
-      const html = `
-        <div class="weather-container">
-          <div class="current-weather">
-            <div class="current-header">
-              <div>
-                <div class="location" style="display:flex;align-items:center;gap:8px;">
-                  <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                  </svg>
-                  <h2 style="margin:0">Keswick, GB</h2>
-                </div>
-                <div style="font-size: 0.75rem; margin-top:6px; opacity: 0.9;">${detailLabel}</div>
-              </div>
-              <div id="conditionsBanner">${bannerHtml}</div>
-            </div>
-            
-            <div style="display: grid; grid-template-columns: 120px 1fr; gap: 12px; align-items: center;">
-              <img src="${windGraphUrl}" alt="Wind graph" style="width: 120px; height: 120px;">
-              
-              <div class="current-grid" style="grid-template-columns: repeat(2, 1fr);">
-                <div class="metric">
-                  <svg class="metric-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"></path>
-                  </svg>
-                  <div class="metric-label">Temp</div>
-                  <div class="metric-value">${Math.round(detailData.main.temp)}°C</div>
-                  ${selectedDayIndex === -1 ? `<div class="metric-sub">${detailData.weather[0].description}</div>` : ''}
-                </div>
-                
-                <div class="metric">
-                  <svg class="metric-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707"></path>
-                  </svg>
-                  <div class="metric-label">Rain</div>
-                  <div class="metric-value">${selectedDayIndex === -1 ? (detailData.rain && detailData.rain['1h'] || 0) : (detailData.rain && detailData.rain['3h'] || 0)} mm</div>
-                  ${selectedDayIndex === -1 ? `<div class="metric-sub">Hum: ${detailData.main.humidity}%</div>` : ''}
-                </div>
-                
-                <div class="metric">
-                  <div class="metric-icon" style="font-size: 16px; color: #000000;">→</div>
-                  <div class="metric-label">Direction</div>
-                  <div class="metric-value">${getWindDirection(windDeg)}</div>
-                  <div class="metric-sub">${windDeg}°</div>
-                </div>
-                
-                <div class="metric">
-                  <svg class="metric-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
-                  </svg>
-                  <div class="metric-label">Speed</div>
-                  <div class="metric-value">${windSpeedMph.toFixed(1)} mph</div>
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          <div id="forecastsWrapper" style="display: block;">
-            <div style="margin-top:8px;">
-              <div class="d-flex justify-content-between align-items-center mb-2">
-                <div class="small text-muted">Hourly (08:00–11:00)</div>
-                <div class="small text-muted">Wind / Rain</div>
-              </div>
-              <div id="hourlyChartSvg" style="width:100%;height:240px;display:block;background:transparent;"></div>
-            </div>
-
-              <div class="forecast-compact mt-3">
-                <h3 class="forecast-header">5-Day Forecast</h3>
-                <div class="list-group">
-                  ${forecastHtml}
-                </div>
-              </div>
-
-        </div>
-      `;
-      
-      container.innerHTML = html;
-      // Render hourly chart: use an appropriate hourly slice when possible
-      try {
-        let chartHourly = data.hourly;
-        if ((selectedDayIndex === -2 || selectedDayIndex === -3) && data.allHourly && data.allHourly.length) {
-          // compute same target day used above
-          const now = new Date();
-          const targetDay = selectedDayIndex === -2 ? 6 : 0;
-          const d = new Date(now);
-          let diff = (targetDay + 7 - d.getDay()) % 7;
-          if (diff === 0) diff = 7;
-          d.setDate(d.getDate() + diff);
-          const dayKey = d.toISOString().slice(0,10);
-          const filtered = data.allHourly.filter(h => new Date(h.dt * 1000).toISOString().slice(0,10) === dayKey);
-          if (filtered.length) chartHourly = filtered;
-        } else if (selectedDayIndex !== -1 && data.allHourly && data.allHourly.length && data.forecast && data.forecast[selectedDayIndex]) {
-          const selectedDay = new Date(data.forecast[selectedDayIndex].dt * 1000);
-          const dayKey = selectedDay.toISOString().slice(0,10);
-          const filtered = data.allHourly.filter(h => new Date(h.dt * 1000).toISOString().slice(0,10) === dayKey);
-          if (filtered.length) chartHourly = filtered;
-        }
-        if (chartHourly && chartHourly.length) renderHourlyChart(chartHourly);
-      } catch (e) {
-        console.warn('Hourly chart render failed', e);
-      }
-
-      // indicators handled in the compact forecast; no separate card
-
-      // forecasts always visible (toggle removed)
-    };
-
-    // App configuration: loaded from /config.json. Keep this empty here so config is editable
-    // from the external file; loadConfig merges the fetched values into this object.
-    let appConfig = {};
-
-    const loadConfig = async () => {
-      try {
-        const r = await fetch('/config.json');
-        if (!r.ok) return;
-        const j = await r.json();
-        appConfig = Object.assign(appConfig, j || {});
-        console.log('Config loaded', appConfig);
-      } catch (e) {
-        console.warn('Config load failed, using defaults', e);
-      }
-    };
-
-    const indicatorClassFor = (val, thresh) => {
-      if (val === null || val === undefined) return 'bg-secondary text-white';
-      const v = Number(val) || 0;
-      // rain: treat near-zero as zero; green only for zero.
-      if (thresh === appConfig.rain) {
-        if (Math.abs(v) < 1e-6) return 'bg-success';
-        // amber range is 1..amber (inclusive); anything non-zero below 1 treated as amber
-        if (v <= thresh.amber) return 'bg-warning text-dark';
-        return 'bg-danger';
-      }
-      // wind/gust thresholds: <green => green, <=amber => amber, >amber => red
-      if (v < thresh.green) return 'bg-success';
-      if (v <= thresh.amber) return 'bg-warning text-dark';
-      return 'bg-danger';
-    };
-
-    // indicators removed — forecast compact list displays rain/wind/gust badges
-
-    const renderHourlyChart = (hourly) => {
-      const container = document.getElementById('hourlyChartSvg');
-      if (!container) return;
-      container.innerHTML = '';
-      const w = container.clientWidth || 600;
-      const h = 240;
-      const pad = { left: 40, right: 10, top: 12, bottom: 28 };
-      const innerW = Math.max(10, w - pad.left - pad.right);
-      const innerH = Math.max(10, h - pad.top - pad.bottom);
-
-      const wind = hourly.map(it => +(it.wind_speed || 0));
-      const gust = hourly.map(it => +(it.wind_gust || it.wind_speed || 0));
-      const rain = hourly.map(it => +((it.rain && it.rain['1h']) || 0));
-      const labels = hourly.map(it => (new Date(it.dt * 1000)).getHours().toString().padStart(2,'0') + ':00');
-
-      const alertThreshold = (appConfig && appConfig.conditions && appConfig.conditions.marginal) ? Number(appConfig.conditions.marginal) : 20;
-      const yWindMax = Math.max(5, ...gust, alertThreshold);
-      const yRainMax = Math.max(0.1, ...rain);
-
-      const ns = 'http://www.w3.org/2000/svg';
-      const svg = document.createElementNS(ns,'svg');
-      svg.setAttribute('width', w);
-      svg.setAttribute('height', h);
-
-      // background
-      const bg = document.createElementNS(ns,'rect');
-      bg.setAttribute('x',0); bg.setAttribute('y',0); bg.setAttribute('width',w); bg.setAttribute('height',h); bg.setAttribute('fill','transparent');
-      svg.appendChild(bg);
-
-      const n = wind.length;
-      const stepX = n > 1 ? innerW / (n-1) : innerW;
-      const xs = Array.from({length:n}, (_,i) => pad.left + i*stepX);
-
-      // rain bars (at bottom)
-      for (let i=0;i<n;i++){
-        const val = rain[i];
-        const bw = Math.max(6, stepX*0.6);
-        const x = xs[i] - bw/2;
-        const barH = innerH * (val / yRainMax) * 0.6; // scale smaller
-        const y = pad.top + innerH - barH;
-        const rect = document.createElementNS(ns,'rect');
-        rect.setAttribute('x', x);
-        rect.setAttribute('y', y);
-        rect.setAttribute('width', bw);
-        rect.setAttribute('height', barH);
-        rect.setAttribute('fill', 'rgba(100,116,139,0.45)');
-        svg.appendChild(rect);
-      }
-
-      // Create smooth paths using Catmull-Rom -> Bezier conversion
-      const toYs = (arr) => arr.map(v => pad.top + innerH * (1 - v / yWindMax));
-      const windYs = toYs(wind);
-      const gustYs = toYs(gust);
-
-      const catmullToBezier = (xsArr, ysArr) => {
-        if (xsArr.length === 0) return '';
-        const pts = xsArr.map((x,i) => [x, ysArr[i]]);
-        if (pts.length === 1) return `M ${pts[0][0]},${pts[0][1]}`;
-        let d = `M ${pts[0][0]},${pts[0][1]}`;
-        for (let i = 0; i < pts.length - 1; i++) {
-          const p0 = i === 0 ? pts[i] : pts[i - 1];
-          const p1 = pts[i];
-          const p2 = pts[i + 1];
-          const p3 = (i + 2 < pts.length) ? pts[i + 2] : p2;
-          const bp1x = p1[0] + (p2[0] - p0[0]) / 6;
-          const bp1y = p1[1] + (p2[1] - p0[1]) / 6;
-          const bp2x = p2[0] - (p3[0] - p1[0]) / 6;
-          const bp2y = p2[1] - (p3[1] - p1[1]) / 6;
-          d += ` C ${bp1x},${bp1y} ${bp2x},${bp2y} ${p2[0]},${p2[1]}`;
-        }
-        return d;
-      };
-
-      const windD = catmullToBezier(xs, windYs);
-      const gustD = catmullToBezier(xs, gustYs);
-
-      // defs and gradients (unique id per render)
-      const gid = 'g' + Math.random().toString(36).slice(2,8);
-      const defs = document.createElementNS(ns, 'defs');
-      const gradW = document.createElementNS(ns, 'linearGradient');
-      gradW.setAttribute('id', 'gradWind_' + gid);
-      gradW.setAttribute('x1', '0'); gradW.setAttribute('x2', '0'); gradW.setAttribute('y1', '0'); gradW.setAttribute('y2', '1');
-      const stop1 = document.createElementNS(ns, 'stop'); stop1.setAttribute('offset', '0%'); stop1.setAttribute('stop-color', '#0b84ff'); stop1.setAttribute('stop-opacity', '0.22');
-      const stop2 = document.createElementNS(ns, 'stop'); stop2.setAttribute('offset', '100%'); stop2.setAttribute('stop-color', '#0b84ff'); stop2.setAttribute('stop-opacity', '0.02');
-      gradW.appendChild(stop1); gradW.appendChild(stop2);
-
-      const gradG = document.createElementNS(ns, 'linearGradient');
-      gradG.setAttribute('id', 'gradGust_' + gid);
-      gradG.setAttribute('x1', '0'); gradG.setAttribute('x2', '0'); gradG.setAttribute('y1', '0'); gradG.setAttribute('y2', '1');
-      const s1 = document.createElementNS(ns, 'stop'); s1.setAttribute('offset', '0%'); s1.setAttribute('stop-color', '#ff7f0e'); s1.setAttribute('stop-opacity', '0.18');
-      const s2 = document.createElementNS(ns, 'stop'); s2.setAttribute('offset', '100%'); s2.setAttribute('stop-color', '#ff7f0e'); s2.setAttribute('stop-opacity', '0.02');
-      gradG.appendChild(s1); gradG.appendChild(s2);
-      defs.appendChild(gradW); defs.appendChild(gradG);
-      svg.appendChild(defs);
-
-      // area for wind (fill under the smoothed path)
-      if (windD) {
-        const areaD = windD + ` L ${pad.left + innerW},${pad.top + innerH} L ${pad.left},${pad.top + innerH} Z`;
-        const area = document.createElementNS(ns, 'path');
-        area.setAttribute('d', areaD);
-        area.setAttribute('fill', `url(#gradWind_${gid})`);
-        area.setAttribute('stroke', 'none');
-        svg.appendChild(area);
-      }
-
-      // smoothed wind line
-      if (windD) {
-        const path = document.createElementNS(ns, 'path');
-        path.setAttribute('d', windD);
-        path.setAttribute('fill', 'none');
-        path.setAttribute('stroke', '#0b84ff');
-        path.setAttribute('stroke-width', '2');
-        svg.appendChild(path);
-      }
-
-      // gust dashed (smoothed) with lighter area
-      if (gustD) {
-        const areaG = gustD + ` L ${pad.left + innerW},${pad.top + innerH} L ${pad.left},${pad.top + innerH} Z`;
-        const area2 = document.createElementNS(ns, 'path');
-        area2.setAttribute('d', areaG);
-        area2.setAttribute('fill', `url(#gradGust_${gid})`);
-        area2.setAttribute('stroke', 'none');
-        svg.appendChild(area2);
-
-        const p2 = document.createElementNS(ns,'path');
-        p2.setAttribute('d', gustD);
-        p2.setAttribute('fill','none');
-        p2.setAttribute('stroke','#ff7f0e');
-        p2.setAttribute('stroke-width','1.5');
-        p2.setAttribute('stroke-dasharray','4,3');
-        svg.appendChild(p2);
-      }
-
-      // x labels: only render enough labels to avoid overlap
-      const approxLabelWidth = 40; // px per label target
-      const maxLabels = Math.max(1, Math.floor(innerW / approxLabelWidth));
-      const showEvery = Math.max(1, Math.ceil(n / maxLabels));
-      for (let i=0;i<n;i++){
-        if (i % showEvery !== 0 && i !== n-1) continue; // always show last label
-        const tx = document.createElementNS(ns,'text');
-        tx.setAttribute('x', xs[i]);
-        tx.setAttribute('y', pad.top + innerH + 16);
-        tx.setAttribute('fill','#475569');
-        tx.setAttribute('font-size', (innerW < 240 ? '9' : '10'));
-        tx.setAttribute('text-anchor','middle');
-        tx.textContent = labels[i];
-        svg.appendChild(tx);
-      }
-
-      // y axis labels (wind)
-      const yl = [0, Math.round(yWindMax/2), Math.round(yWindMax)];
-      yl.forEach((v,idx)=>{
-        const y = pad.top + innerH*(1 - v/yWindMax);
-        const t = document.createElementNS(ns,'text');
-        t.setAttribute('x', 8);
-        t.setAttribute('y', y+4);
-        t.setAttribute('fill','#475569');
-        t.setAttribute('font-size','10');
-        t.textContent = v + ' mph';
-        svg.appendChild(t);
-        const l = document.createElementNS(ns,'line');
-        l.setAttribute('x1', pad.left); l.setAttribute('x2', pad.left + innerW); l.setAttribute('y1', y); l.setAttribute('y2', y); l.setAttribute('stroke','rgba(16,24,40,0.04)'); l.setAttribute('stroke-width','1');
-        svg.appendChild(l);
-      });
-
-      // draw alert/reference line for wind (e.g., marginal threshold)
-      try {
-        if (!isNaN(alertThreshold)) {
-          const yAlert = pad.top + innerH * (1 - alertThreshold / yWindMax);
-          const al = document.createElementNS(ns,'line');
-          al.setAttribute('x1', pad.left);
-          al.setAttribute('x2', pad.left + innerW);
-          al.setAttribute('y1', yAlert);
-          al.setAttribute('y2', yAlert);
-          al.setAttribute('stroke', '#ff4d4f');
-          al.setAttribute('stroke-width', '1.5');
-          al.setAttribute('stroke-dasharray', '6,4');
-          svg.appendChild(al);
-          const at = document.createElementNS(ns,'text');
-          at.setAttribute('x', pad.left + innerW - 4);
-          at.setAttribute('y', yAlert - 4);
-          at.setAttribute('fill', '#ff4d4f');
-          at.setAttribute('font-size', '10');
-          at.setAttribute('text-anchor', 'end');
-          at.textContent = `${alertThreshold} mph`;
-          svg.appendChild(at);
-        }
-      } catch (e) { /* ignore */ }
-
-      container.appendChild(svg);
-    };
-    
-    // Load on start when DOM is ready: load config, then weather/events
-    window.addEventListener('DOMContentLoaded', () => {
-      loadConfig().then(() => {
-        try { fetchWeather(); } catch (e) { console.warn('fetchWeather start failed', e); }
-      });
-      try { loadEvents(); } catch (e) { console.warn('loadEvents start failed', e); }
     });
-  </script>
+
+    /* ================================================================
+       Meteogram
+    ================================================================ */
+    let daylightChart = null;
+
+    function buildMeteogram(daylightStats) {
+        if (daylightChart && typeof daylightChart.destroy === 'function') {
+            daylightChart.destroy();
+        }
+
+        /* Dynamic axis bounds */
+        const maxGust = Math.max(...daylightStats.gusts, 0);
+        const maxRain = Math.max(...daylightStats.rain,  0);
+
+        // Wind axis: round up to nearest 10, at least 20, always include 20mph line
+        const windMax  = Math.max(20, Math.ceil((maxGust * 1.15) / 10) * 10);
+        // Rain axis: round up to nearest 2, at least 2
+        const rainMax  = Math.max(2,  Math.ceil((maxRain  * 1.2)  / 2)  * 2);
+        const rainTick = rainMax <= 6 ? 1 : rainMax <= 12 ? 2 : 5;
+
+        daylightChart = Highcharts.chart('daylightChart', {
+            chart: { zoomType:'x', marginTop:10, marginBottom:42, spacingLeft:0, spacingRight:6 },
+            xAxis: [{
+                categories: daylightStats.time,
+                crosshair: { color:'rgba(74,159,212,0.35)', width:1, dashStyle:'ShortDash' },
+                labels: {
+                    style: { color:'#6c8aa8', fontSize:'10px' },
+                    step: Math.max(1, Math.floor(daylightStats.time.length / 6))
+                },
+                lineColor: '#d0dce8',
+                tickColor: '#d0dce8'
+            }],
+            yAxis: [
+                {
+                    title: { text:'mph', style:{ color:'#6c8aa8', fontSize:'10px' }, margin:4 },
+                    labels: { format:'{value}', style:{ color:'#6c8aa8', fontSize:'10px' } },
+                    min: 0, max: windMax, tickInterval: Math.ceil(windMax / 3 / 5) * 5,
+                    gridLineColor: '#e4ecf2',
+                    lineColor: '#d0dce8',
+                    plotLines: [{
+                        value: 20,
+                        color: '#e53e3e',
+                        dashStyle: 'Dot',
+                        width: 2,
+                        zIndex: 5,
+                        label: {
+                            text: '20 mph',
+                            align: 'right',
+                            x: -4,
+                            style: { color:'#e53e3e', fontSize:'9px', fontWeight:'600' }
+                        }
+                    }]
+                },
+                {
+                    title: { text:'mm', style:{ color:'#6c8aa8', fontSize:'10px' }, margin:4 },
+                    labels: { format:'{value}', style:{ color:'#6c8aa8', fontSize:'10px' } },
+                    opposite: true,
+                    min: 0, max: rainMax, tickInterval: rainTick,
+                    gridLineWidth: 0,
+                    lineColor: '#d0dce8'
+                }
+            ],
+            plotOptions: {
+                column: { borderWidth:0, borderRadius:3, pointPadding:0.05, groupPadding:0 },
+                spline:  { lineWidth:2.5, states:{ hover:{ lineWidth:3 } } }
+            },
+            series: [
+                {
+                    name: 'Rain', type:'column', yAxis:1,
+                    data: daylightStats.rain,
+                    color: 'rgba(100,181,246,0.55)',
+                    borderColor: 'rgba(100,181,246,0.8)', borderWidth:1,
+                    tooltip: { valueSuffix:' mm' }, zIndex:1
+                },
+                {
+                    name: 'Wind', type:'areaspline',
+                    data: daylightStats.wind,
+                    color: '#81c784',
+                    fillColor: {
+                        linearGradient: { x1:0, y1:0, x2:0, y2:1 },
+                        stops: [[0,'rgba(129,199,132,0.30)'],[1,'rgba(129,199,132,0.02)']]
+                    },
+                    marker: { enabled:false },
+                    tooltip: { valueSuffix:' mph' }, zIndex:3
+                },
+                {
+                    name: 'Gusts', type:'spline',
+                    data: daylightStats.gusts,
+                    color: '#ffb74d', dashStyle:'ShortDash', lineWidth:2,
+                    marker: { enabled:false },
+                    tooltip: { valueSuffix:' mph' }, zIndex:4
+                }
+            ],
+            legend: { align:'left', verticalAlign:'top', floating:true, y:-4, x:2, symbolRadius:4, symbolHeight:10, symbolWidth:14 }
+        });
+    }
+
+    /* ================================================================
+       Main
+    ================================================================ */
+    async function init() {
+        const thresholds  = CONFIG.thresholds;
+        const windowStart = CONFIG.morningWindow.startHour;
+        const windowEnd   = CONFIG.morningWindow.endHour;
+
+        /* Live fetch */
+        const resp = await fetch(CONFIG.url, { mode:'cors' });
+        const data = await resp.json();
+        const hourly = data.hourly;
+
+        /* Group hourly rows by date */
+        const byDate = {};
+        hourly.time.forEach((t, i) => {
+            const date = t.split('T')[0];
+            if (!byDate[date]) byDate[date] = { time:[], wind:[], gusts:[], rain:[], dir:[], code:[] };
+            byDate[date].time.push(t);
+            byDate[date].wind.push(hourly.wind_speed_10m[i]);
+            byDate[date].gusts.push(hourly.wind_gusts_10m[i]);
+            byDate[date].rain.push(hourly.precipitation[i]);
+            byDate[date].dir.push(hourly.winddirection_10m[i]);
+            byDate[date].code.push(hourly.weathercode[i]);
+        });
+
+        const dates = Object.keys(byDate).slice(0, 4); // 4-day forecast
+
+        /* Update current-conditions panel */
+        function updateCurrent(date) {
+            const d = byDate[date];
+            if (!d) return;
+
+            const stats = computeMorningStats(d, windowStart, windowEnd);
+
+            document.getElementById('weather-icon-display').textContent = getWeatherIcon(d.code[0]);
+            document.getElementById('wind-dir-display').style.transform = `rotate(${d.dir[0]}deg)`;
+            document.getElementById('wind-dir-label').textContent        = degreeToCompass(d.dir[0]);
+
+            const setBadge = (id, label, val, thresh) => {
+                const c  = getStatusColor(val, thresh);
+                const el = document.getElementById(id);
+                el.textContent      = label;
+                el.style.background = STATUS_BG[c];
+                el.style.color      = STATUS_TEXT[c];
+                el.className        = 'badge';
+            };
+            setBadge('badge-rain',  `🌧 ${stats.rainSum.toFixed(1)} mm`,  stats.rainSum,  thresholds.rain);
+            setBadge('badge-wind',  `💨 ${stats.windMax.toFixed(0)} mph`, stats.windMax,  thresholds.wind);
+            setBadge('badge-gusts', `💥 ${stats.gustMax.toFixed(0)} mph`, stats.gustMax,  thresholds.gusts);
+
+            buildMeteogram(computeDaylightStats(d));
+        }
+
+        /* Build 4-day forecast cards */
+        const container = document.getElementById('forecast-strip');
+        container.innerHTML = '';
+
+        dates.forEach(date => {
+            const d     = byDate[date];
+            const stats = computeMorningStats(d, windowStart, windowEnd);
+            const dow   = new Date(date).toLocaleDateString([], { weekday:'short' });
+            const dom   = new Date(date).getDate();
+            const mon   = new Date(date).toLocaleDateString([], { month:'short' });
+            const icon  = getWeatherIcon(d.code[Math.floor(d.code.length / 2)] ?? d.code[0]);
+
+            const rainCol  = getStatusColor(stats.rainSum,  thresholds.rain);
+            const windCol  = getStatusColor(stats.windMax,  thresholds.wind);
+            const gustCol  = getStatusColor(stats.gustMax,  thresholds.gusts);
+
+            const col = document.createElement('div');
+            col.className = 'col';
+            col.innerHTML = `
+              <div class="forecast-day" data-date="${date}">
+                <div class="day-name">${dow} ${dom} ${mon}</div>
+                <div class="day-icon">${icon}</div>
+                <span class="metric-pill" style="background:${STATUS_BG[rainCol]};color:${STATUS_TEXT[rainCol]};">
+                  🌧 ${stats.rainSum.toFixed(1)} mm
+                </span>
+                <span class="metric-pill" style="background:${STATUS_BG[windCol]};color:${STATUS_TEXT[windCol]};">
+                  💨 ${stats.windMax.toFixed(0)} mph
+                </span>
+                <span class="metric-pill" style="background:${STATUS_BG[gustCol]};color:${STATUS_TEXT[gustCol]};">
+                  💥 ${stats.gustMax.toFixed(0)} mph
+                </span>
+              </div>`;
+
+            col.querySelector('.forecast-day').addEventListener('click', () => {
+                document.querySelectorAll('.forecast-day').forEach(c => c.classList.remove('selected'));
+                col.querySelector('.forecast-day').classList.add('selected');
+                updateCurrent(date);
+            });
+            container.appendChild(col);
+        });
+
+        /* Select first day by default */
+        if (dates.length) {
+            container.querySelector('.forecast-day').classList.add('selected');
+            updateCurrent(dates[0]);
+        }
+    }
+
+    init();
+
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js');
+    }
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
