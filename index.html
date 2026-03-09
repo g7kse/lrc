@@ -401,7 +401,7 @@
             };
             setBadge('badge-rain',  `🌧 ${stats.rainSum.toFixed(1)} mm`,  stats.rainSum,  thresholds.rain);
             setBadge('badge-wind',  `💨 ${stats.windMax.toFixed(0)} mph`, stats.windMax,  thresholds.wind);
-            setBadge('badge-gusts', `💥 ${stats.gustMax.toFixed(0)} mph`, stats.gustMax,  thresholds.gusts);
+            setBadge('badge-gusts', `🌪️ ${stats.gustMax.toFixed(0)} mph`, stats.gustMax,  thresholds.gusts);
 
             buildMeteogram(computeDaylightStats(d));
         }
@@ -435,7 +435,7 @@
                   💨 ${stats.windMax.toFixed(0)} mph
                 </span>
                 <span class="metric-pill" style="background:${STATUS_BG[gustCol]};color:${STATUS_TEXT[gustCol]};">
-                  💥 ${stats.gustMax.toFixed(0)} mph
+                  🌪️ ${stats.gustMax.toFixed(0)} mph
                 </span>
               </div>`;
 
