@@ -172,7 +172,7 @@
       }
       switch (condition) {
         case 'Great': return 'alert-success';
-        case 'Good': return 'alert-info';
+        case 'Good': return 'alert-success';
         case 'Reasonable': return 'alert-warning';
         case 'Marginal': return 'alert-warning';
         case 'Dont bother': return 'alert-danger';
@@ -498,11 +498,11 @@
         }
       } catch (e) { /* ignore */ }
 
-      // Build a compact forecast HTML for the 5-day list (clickable)
+      // Build a compact forecast table (date left, then Rain / Wind / Gust)
       let forecastHtml = '';
       try {
         if (data.forecast && data.forecast.length) {
-          forecastHtml = data.forecast.slice(0,5).map(function(day, idx) {
+          const rows = data.forecast.slice(0,5).map(function(day, idx) {
             const date = new Date(day.dt * 1000);
             const pretty = date.toLocaleDateString('en-GB', { weekday: 'short', day: '2-digit', month: 'short' });
 
@@ -525,24 +525,29 @@
             const windClass = indicatorClassFor(windVal, appConfig.wind);
             const gustClass = indicatorClassFor(gustVal, appConfig.wind);
 
-            const fmt = (v) => String(Math.round(v)).padStart(2,'0');
-            const rainDisp = fmt(rainVal);
-            const windDisp = fmt(windVal);
-            const gustDisp = fmt(gustVal);
+            const palette = {
+              'bg-success': '#198754',
+              'bg-warning': '#ffc107',
+              'bg-danger': '#dc3545',
+              'bg-secondary': '#6c757d',
+              'bg-info': '#0dcaf0'
+            };
+            const colorFor = (cls) => {
+              if (!cls) return '#6c757d';
+              for (const k of Object.keys(palette)) if (cls.indexOf(k) >= 0) return palette[k];
+              return '#6c757d';
+            };
+            const rainColor = colorFor(rainClass);
+            const windColor = colorFor(windClass);
+            const gustColor = colorFor(gustClass);
 
-            return `
-              <button class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" onclick="selectDay(${idx})">
-                <div><strong>${pretty}</strong></div>
-                <div class="d-flex gap-2 align-items-center">
-                  <div class="small text-muted">Rain</div>
-                  <div class="badge ${rainClass} rounded-pill px-2">${rainDisp}</div>
-                  <div class="small text-muted ms-2">Wind</div>
-                  <div class="badge ${windClass} rounded-pill px-2">${windDisp}</div>
-                  <div class="small text-muted ms-2">Gust</div>
-                  <div class="badge ${gustClass} rounded-pill px-2">${gustDisp}</div>
-                </div>
-              </button>`;
-          }).join('');
+            const rainBadge = `<span class="badge-square" aria-hidden="true" style="background:${rainColor};border:1px solid rgba(0,0,0,0.06)"></span><span class="visually-hidden">Rain: ${Math.round(rainVal)} mm</span>`;
+            const windBadge = `<span class="badge-square" aria-hidden="true" style="background:${windColor};border:1px solid rgba(0,0,0,0.06)"></span><span class="visually-hidden">Wind: ${Math.round(windVal)} mph</span>`;
+            const gustBadge = `<span class="badge-square" aria-hidden="true" style="background:${gustColor};border:1px solid rgba(0,0,0,0.06)"></span><span class="visually-hidden">Gust: ${Math.round(gustVal)} mph</span>`;
+
+            return `<tr onclick="selectDay(${idx})" class="forecast-row" role="button"><td><strong>${pretty}</strong></td><td class="text-end">${rainBadge}</td><td class="text-end">${windBadge}</td><td class="text-end">${gustBadge}</td></tr>`;
+          });
+          forecastHtml = `<table class="table table-borderless forecast-table mb-0"><thead><tr><th></th><th class="text-muted small text-end">Rain</th><th class="text-muted small text-end">Wind</th><th class="text-muted small text-end">Gust</th></tr></thead><tbody>` + rows.join('') + '</tbody></table>';
         }
       } catch (e) { forecastHtml = ''; }
 
@@ -674,16 +679,17 @@
 
     const indicatorClassFor = (val, thresh) => {
       if (val === null || val === undefined) return 'bg-secondary text-white';
-      if (val === 0 && thresh === appConfig.rain) return 'bg-success';
-      // rain: 0 => green, 1-amber threshold => amber, >amber => red
+      const v = Number(val) || 0;
+      // rain: treat near-zero as zero; green only for zero.
       if (thresh === appConfig.rain) {
-        if (val === 0) return 'bg-success';
-        if (val <= thresh.amber) return 'bg-warning text-dark';
+        if (Math.abs(v) < 1e-6) return 'bg-success';
+        // amber range is 1..amber (inclusive); anything non-zero below 1 treated as amber
+        if (v <= thresh.amber) return 'bg-warning text-dark';
         return 'bg-danger';
       }
-      // wind thresholds: <green => green, <=amber => amber, >amber => red
-      if (val < thresh.green) return 'bg-success';
-      if (val <= thresh.amber) return 'bg-warning text-dark';
+      // wind/gust thresholds: <green => green, <=amber => amber, >amber => red
+      if (v < thresh.green) return 'bg-success';
+      if (v <= thresh.amber) return 'bg-warning text-dark';
       return 'bg-danger';
     };
 

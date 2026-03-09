@@ -1,11 +1,11 @@
 {
-  "name": "LRC Rowing",
-  "short_name": "Can I go rowing?",
-  "description": "Rowing weather app",
+  "name": "Derwentwater Weather",
+  "short_name": "Derwent",
+  "description": "Derwentwater Weather PWA",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#3b4b59",
-  "theme_color": "#3b4b59",
+  "background_color": "#1234376bff",
+  "theme_color": "#1234376bff",
   "icons": [
     {
       "src": "/icons/lrc_icon-192.png",
