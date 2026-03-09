@@ -13,7 +13,7 @@
     <style>
         :root {
             --navy:      #12437b;
-            --navy-dark: #0d2f5a;
+            --navy-dark: #12437bff;
             --navy-mid:  #1a5298;
             --accent:    #4a9fd4;
             --card-bg:   #ffffff;
@@ -22,7 +22,7 @@
         }
 
         body {
-            background: #eef3f8;
+            background: #aacbd2ff;
             font-family: 'Segoe UI', system-ui, sans-serif;
             color: #1a2a3a;
         }
@@ -114,7 +114,7 @@
 <body>
     <header class="py-3">
         <div class="container d-flex align-items-center">
-            <img src="/icons/lrc_icon-192.png" alt="logo" width="40" height="40" class="me-2"
+            <img src="/icons/logo_bg.png" alt="logo" width="40" height="40" class="me-2"
                  onerror="this.style.display='none'">
             <h1 class="text-white m-0">Derwentwater Weather</h1>
         </div>
@@ -126,22 +126,25 @@
         <div id="current-card" class="card mb-4">
             <div class="card-body">
                 <h5 class="card-title">
-                    Current Conditions
-                    <span style="font-weight:400;text-transform:none;font-size:.72rem;color:var(--text-muted);margin-left:8px;">morning window 08:00–11:00</span>
+                    Lake Conditions
+                    <span style="font-weight:400;text-transform:none;font-size:.72rem;color:var(--text-muted);margin-left:8px;"> 08:00–11:00</span>
                 </h5>
                 <div class="row g-3">
-                    <!-- Left: icon + wind arrow + badges in one row -->
-                    <div class="col-md-4 d-flex align-items-center gap-3">
-                        <div id="weather-icon-display" class="fs-1" style="flex-shrink:0;"></div>
-                        <div class="text-center" style="flex-shrink:0;">
-                            <div id="wind-dir-display" style="display:inline-block;transform:rotate(0deg);">↑</div>
-                            <div id="wind-dir-label">N</div>
+                    <!-- Left: all conditions in a compact column -->
+                    <div class="col-md-4 d-flex flex-column gap-2">
+                        <!-- Single row: icon · wind arrow · 3 badges -->
+                        <div class="d-flex align-items-center gap-2 flex-wrap">
+                            <div id="weather-icon-display" class="fs-2" style="flex-shrink:0;line-height:1;"></div>
+                            <div class="text-center" style="flex-shrink:0;">
+                                <div id="wind-dir-display" style="display:inline-block;transform:rotate(0deg);font-size:1.4rem;color:var(--navy);">↑</div>
+                                <div id="wind-dir-label" style="font-size:.65rem;color:var(--text-muted);font-weight:600;line-height:1;">N</div>
+                            </div>
+                            <span id="badge-rain"  class="badge" style="font-size:.72rem;">Rain: –</span>
+                            <span id="badge-wind"  class="badge" style="font-size:.72rem;">Wind: –</span>
+                            <span id="badge-gusts" class="badge" style="font-size:.72rem;">Gusts: –</span>
                         </div>
-                        <div class="d-flex flex-column gap-1">
-                            <span id="badge-rain"  class="badge">Rain: –</span>
-                            <span id="badge-wind"  class="badge">Wind: –</span>
-                            <span id="badge-gusts" class="badge">Gusts: –</span>
-                        </div>
+                        <!-- Prediction alert -->
+                        <div id="badge-prediction" class="alert mb-0 py-2 px-3 fw-bold" role="alert" style="font-size:.85rem;border-radius:8px;">–</div>
                     </div>
                     <!-- Right: meteogram -->
                     <div class="col-md-8">
@@ -203,17 +206,40 @@
         return '☁️';
     }
 
+    function getPrediction(rainCol, windCol, gustCol) {
+        if (rainCol === 'success' && windCol === 'success' && gustCol === 'success') return { label:'Great',    bg:'#d1fae5', text:'#065f46' };
+        if (rainCol === 'success' && windCol === 'warning' && gustCol === 'warning') return { label:'Ok',       bg:'#fff3cd', text:'#92400e' };
+        if (rainCol === 'success' && windCol === 'warning' && gustCol === 'danger')  return { label:'Marginal', bg:'#fed7aa', text:'#9a3412' };
+        return { label:'Bad', bg:'#fee2e2', text:'#991b1b' };
+    }
+
     function computeMorningStats(dayData, windowStart, windowEnd) {
         let windMax = 0, gustMax = 0, rainSum = 0;
+        let dirSinSum = 0, dirCosSum = 0, dirCount = 0;
+        let codes = [];
         dayData.time.forEach((t, i) => {
             const hour = new Date(t).getHours();
             if (hour >= windowStart && hour < windowEnd) {
                 windMax  = Math.max(windMax,  dayData.wind[i]);
                 gustMax  = Math.max(gustMax,  dayData.gusts[i]);
                 rainSum += dayData.rain[i];
+                // circular mean for wind direction
+                const rad = dayData.dir[i] * Math.PI / 180;
+                dirSinSum += Math.sin(rad);
+                dirCosSum += Math.cos(rad);
+                dirCount++;
+                codes.push(dayData.code[i]);
             }
         });
-        return { windMax, gustMax, rainSum };
+        // dominant weather code in the morning window (most frequent)
+        const morningCode = codes.length
+            ? codes.sort((a,b) => codes.filter(v=>v===b).length - codes.filter(v=>v===a).length)[0]
+            : dayData.code[0];
+        // circular mean direction
+        const morningDir = dirCount
+            ? (Math.atan2(dirSinSum / dirCount, dirCosSum / dirCount) * 180 / Math.PI + 360) % 360
+            : dayData.dir[0];
+        return { windMax, gustMax, rainSum, morningCode, morningDir };
     }
 
     function computeDaylightStats(dayData) {
@@ -387,9 +413,9 @@
 
             const stats = computeMorningStats(d, windowStart, windowEnd);
 
-            document.getElementById('weather-icon-display').textContent = getWeatherIcon(d.code[0]);
-            document.getElementById('wind-dir-display').style.transform = `rotate(${d.dir[0]}deg)`;
-            document.getElementById('wind-dir-label').textContent        = degreeToCompass(d.dir[0]);
+            document.getElementById('weather-icon-display').textContent = getWeatherIcon(stats.morningCode);
+            document.getElementById('wind-dir-display').style.transform = `rotate(${stats.morningDir}deg)`;
+            document.getElementById('wind-dir-label').textContent        = degreeToCompass(stats.morningDir);
 
             const setBadge = (id, label, val, thresh) => {
                 const c  = getStatusColor(val, thresh);
@@ -402,6 +428,18 @@
             setBadge('badge-rain',  `🌧 ${stats.rainSum.toFixed(1)} mm`,  stats.rainSum,  thresholds.rain);
             setBadge('badge-wind',  `💨 ${stats.windMax.toFixed(0)} mph`, stats.windMax,  thresholds.wind);
             setBadge('badge-gusts', `🌪️ ${stats.gustMax.toFixed(0)} mph`, stats.gustMax,  thresholds.gusts);
+
+            // Prediction badge
+            const rainCol = getStatusColor(stats.rainSum,  thresholds.rain);
+            const windCol = getStatusColor(stats.windMax,  thresholds.wind);
+            const gustCol = getStatusColor(stats.gustMax,  thresholds.gusts);
+            const pred    = getPrediction(rainCol, windCol, gustCol);
+            const PRED_ICONS = { Great:'🌟', Ok:'👍', Marginal:'⚠️', Bad:'❌' };
+            const predEl  = document.getElementById('badge-prediction');
+            predEl.textContent      = `${PRED_ICONS[pred.label] || ''} ${pred.label} conditions`;
+            predEl.style.background = pred.bg;
+            predEl.style.color      = pred.text;
+            predEl.style.border     = `1px solid ${pred.text}33`;
 
             buildMeteogram(computeDaylightStats(d));
         }
