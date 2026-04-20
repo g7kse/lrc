@@ -1,3 +1,5 @@
+[![Netlify Status](https://api.netlify.com/api/v1/badges/2a7370d2-ae5c-419f-90b1-21bcb72fbc07/deploy-status)](https://app.netlify.com/projects/lrcrowing/deploys)
+
 ## Lakeland rowing club basic weather conditions predictor
 
 This is a pretty much a simple weather app. It takes weather from Open Meteo and uses it to predict conditions at The Isthmus. This is useful for working out is a club session is worth going to.
