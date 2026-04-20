@@ -39,6 +39,192 @@
             font-weight: 600;
         }
 
+        /* ── Session toggle pills ── */
+        .session-toggle {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .session-btn {
+            background: rgba(255,255,255,0.12);
+            border: 1px solid rgba(255,255,255,0.30);
+            color: #fff;
+            border-radius: 20px;
+            padding: 3px 12px;
+            font-size: .72rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all .15s ease;
+            white-space: nowrap;
+        }
+
+        .session-btn:hover { background: rgba(255,255,255,0.22); }
+
+        .session-btn.active {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: #fff;
+            box-shadow: 0 1px 6px rgba(74,159,212,0.5);
+        }
+
+        /* ── Settings gear ── */
+        .settings-btn {
+            background: rgba(255,255,255,0.12);
+            border: 1px solid rgba(255,255,255,0.30);
+            color: #fff;
+            border-radius: 50%;
+            width: 34px;
+            height: 34px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all .15s ease;
+            flex-shrink: 0;
+        }
+        .settings-btn:hover { background: rgba(255,255,255,0.22); }
+
+        /* ── Settings drawer ── */
+        #settings-drawer {
+            display: none;
+            background: var(--card-bg);
+            border-bottom: 3px solid var(--accent);
+            box-shadow: 0 4px 16px rgba(18,67,123,0.15);
+            padding: 1rem 0;
+        }
+
+        #settings-drawer.open { display: block; }
+
+        .settings-section-title {
+            font-size: .7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .07em;
+            color: var(--text-muted);
+            margin-bottom: .5rem;
+        }
+
+        .settings-card {
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: .75rem;
+            background: #f8fafc;
+        }
+
+        .threshold-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: .55rem;
+        }
+
+        .threshold-row:last-child { margin-bottom: 0; }
+
+        .threshold-label {
+            width: 60px;
+            font-size: .75rem;
+            font-weight: 600;
+            color: var(--navy);
+            flex-shrink: 0;
+        }
+
+        .threshold-input-wrap {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            flex: 1;
+        }
+
+        .threshold-input-wrap input[type="number"] {
+            width: 58px;
+            border: 1px solid var(--border);
+            border-radius: 5px;
+            padding: 3px 6px;
+            font-size: .8rem;
+            font-weight: 600;
+            color: var(--navy);
+            text-align: center;
+        }
+
+        .threshold-input-wrap input[type="number"]:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 2px rgba(74,159,212,0.2);
+        }
+
+        .thresh-chip {
+            font-size: .65rem;
+            padding: 2px 7px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+
+        .time-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: .55rem;
+        }
+
+        .time-row:last-child { margin-bottom: 0; }
+
+        .time-label {
+            font-size: .72rem;
+            font-weight: 600;
+            color: var(--navy);
+            width: 68px;
+            flex-shrink: 0;
+        }
+
+        .time-row input[type="number"] {
+            width: 50px;
+            border: 1px solid var(--border);
+            border-radius: 5px;
+            padding: 3px 6px;
+            font-size: .8rem;
+            font-weight: 600;
+            color: var(--navy);
+            text-align: center;
+        }
+
+        .time-row input[type="number"]:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 2px rgba(74,159,212,0.2);
+        }
+
+        .time-sep { font-size: .75rem; color: var(--text-muted); font-weight: 600; }
+
+        .settings-save-btn {
+            background: var(--navy);
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            padding: 7px 22px;
+            font-size: .82rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background .15s ease;
+        }
+
+        .settings-save-btn:hover { background: var(--navy-mid); }
+
+        .settings-reset-btn {
+            background: transparent;
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 7px 14px;
+            font-size: .82rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all .15s ease;
+        }
+
+        .settings-reset-btn:hover { border-color: var(--navy); color: var(--navy); }
+
+        /* ── Main card ── */
         #current-card {
             border: 1px solid var(--border);
             border-top: 4px solid var(--navy);
@@ -108,17 +294,136 @@
             margin-bottom: 3px;
         }
 
+        .save-toast {
+            position: fixed;
+            bottom: 1.2rem;
+            left: 50%;
+            transform: translateX(-50%) translateY(30px);
+            background: var(--navy);
+            color: #fff;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: .8rem;
+            font-weight: 600;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.25);
+            opacity: 0;
+            transition: opacity .25s ease, transform .25s ease;
+            pointer-events: none;
+            z-index: 9999;
+        }
 
+        .save-toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
     </style>
 </head>
 <body>
-    <header class="py-3">
-        <div class="container d-flex align-items-center">
-            <img src="/icons/logo_bg.png" alt="logo" width="40" height="40" class="me-2"
-                 onerror="this.style.display='none'">
-            <h1 class="text-white m-0">Derwentwater Weather</h1>
+
+    <header class="py-2">
+        <div class="container">
+            <!-- Row 1: logo + title + settings -->
+            <div class="d-flex align-items-center mb-2">
+                <img src="/icons/logo_bg.png" alt="logo" width="40" height="40" class="me-2"
+                     onerror="this.style.display='none'">
+                <h1 class="text-white m-0 me-auto">Derwentwater Weather</h1>
+                <button class="settings-btn ms-2" id="settings-toggle" title="Settings" aria-label="Settings">
+                    <i class="bi bi-sliders" style="font-size:.95rem;"></i>
+                </button>
+            </div>
+            <!-- Row 2: session pills -->
+            <div class="session-toggle" id="session-toggle">
+                <button class="session-btn" data-session="adults">🚣 Adults 08–10</button>
+                <button class="session-btn" data-session="juniors">🧒 Juniors 10–12</button>
+                <button class="session-btn" data-session="evening">🌅 Evening 18–20</button>
+            </div>
         </div>
     </header>
+
+    <!-- Settings Drawer -->
+    <div id="settings-drawer">
+        <div class="container">
+            <div class="row g-3">
+                <!-- Thresholds -->
+                <div class="col-md-6">
+                    <div class="settings-section-title">Condition Thresholds</div>
+                    <div class="settings-card">
+                        <!-- Wind -->
+                        <div class="threshold-row">
+                            <span class="threshold-label">💨 Wind</span>
+                            <div class="threshold-input-wrap">
+                                <span class="thresh-chip" style="background:#d1fae5;color:#065f46;">Green ≤</span>
+                                <input type="number" id="s-wind-green" min="1" max="50" step="1">
+                                <span class="thresh-chip" style="background:#fff3cd;color:#92400e;">Amber ≤</span>
+                                <input type="number" id="s-wind-amber" min="1" max="50" step="1">
+                                <span style="font-size:.7rem;color:var(--text-muted);">mph</span>
+                            </div>
+                        </div>
+                        <!-- Gusts -->
+                        <div class="threshold-row">
+                            <span class="threshold-label">🌪️ Gusts</span>
+                            <div class="threshold-input-wrap">
+                                <span class="thresh-chip" style="background:#d1fae5;color:#065f46;">Green ≤</span>
+                                <input type="number" id="s-gusts-green" min="1" max="60" step="1">
+                                <span class="thresh-chip" style="background:#fff3cd;color:#92400e;">Amber ≤</span>
+                                <input type="number" id="s-gusts-amber" min="1" max="60" step="1">
+                                <span style="font-size:.7rem;color:var(--text-muted);">mph</span>
+                            </div>
+                        </div>
+                        <!-- Rain -->
+                        <div class="threshold-row">
+                            <span class="threshold-label">🌧 Rain</span>
+                            <div class="threshold-input-wrap">
+                                <span class="thresh-chip" style="background:#d1fae5;color:#065f46;">Green ≤</span>
+                                <input type="number" id="s-rain-green" min="0" max="20" step="0.5">
+                                <span class="thresh-chip" style="background:#fff3cd;color:#92400e;">Amber ≤</span>
+                                <input type="number" id="s-rain-amber" min="0" max="20" step="0.5">
+                                <span style="font-size:.7rem;color:var(--text-muted);">mm</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Session windows -->
+                <div class="col-md-6">
+                    <div class="settings-section-title">Session Time Windows</div>
+                    <div class="settings-card">
+                        <div class="time-row">
+                            <span class="time-label">🚣 Adults</span>
+                            <input type="number" id="s-adults-start" min="0" max="23" step="1">
+                            <span class="time-sep">:00 – </span>
+                            <input type="number" id="s-adults-end" min="1" max="24" step="1">
+                            <span class="time-sep">:00</span>
+                        </div>
+                        <div class="time-row">
+                            <span class="time-label">🧒 Juniors</span>
+                            <input type="number" id="s-juniors-start" min="0" max="23" step="1">
+                            <span class="time-sep">:00 – </span>
+                            <input type="number" id="s-juniors-end" min="1" max="24" step="1">
+                            <span class="time-sep">:00</span>
+                        </div>
+                        <div class="time-row">
+                            <span class="time-label">🌅 Evening</span>
+                            <input type="number" id="s-evening-start" min="0" max="23" step="1">
+                            <span class="time-sep">:00 – </span>
+                            <input type="number" id="s-evening-end" min="1" max="24" step="1">
+                            <span class="time-sep">:00</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Save / Reset -->
+            <div class="d-flex gap-2 mt-3">
+                <button class="settings-save-btn" id="settings-save">
+                    <i class="bi bi-check-lg me-1"></i>Save Settings
+                </button>
+                <button class="settings-reset-btn" id="settings-reset">
+                    Reset to defaults
+                </button>
+            </div>
+        </div>
+    </div>
 
     <main class="container my-4">
 
@@ -127,7 +432,7 @@
             <div class="card-body">
                 <h5 class="card-title">
                     Lake Conditions
-                    <span style="font-weight:400;text-transform:none;font-size:.72rem;color:var(--text-muted);margin-left:8px;"> 08:00–11:00</span>
+                    <span id="window-label" style="font-weight:400;text-transform:none;font-size:.72rem;color:var(--text-muted);margin-left:8px;"></span>
                 </h5>
                 <div class="row g-3">
                     <!-- Left: all conditions in a compact column -->
@@ -162,19 +467,68 @@
         </div>
     </main>
 
+    <!-- Toast feedback -->
+    <div class="save-toast" id="save-toast">✓ Settings saved</div>
+
     <script>
     /* ================================================================
-       Config & thresholds
+       Defaults
     ================================================================ */
-    const CONFIG = {
-        url: "https://api.open-meteo.com/v1/forecast?latitude=54.594723&longitude=-3.14536&hourly=temperature_2m,wind_speed_10m,wind_gusts_10m,winddirection_10m,precipitation,weathercode&wind_speed_unit=mph&timezone=auto",
+    const DEFAULTS = {
         thresholds: {
             wind:  { green: 10, amber: 18 },
             gusts: { green: 15, amber: 25 },
             rain:  { green: 1,  amber: 5  }
         },
-        morningWindow: { startHour: 8, endHour: 11 }
+        sessions: {
+            adults:  { startHour: 8,  endHour: 10 },
+            juniors: { startHour: 10, endHour: 12 },
+            evening: { startHour: 18, endHour: 20 }
+        }
     };
+
+    /* ================================================================
+       LocalStorage helpers
+    ================================================================ */
+    const STORAGE_KEY = 'derwentwater_settings_v1';
+
+    function loadSettings() {
+        try {
+            const raw = localStorage.getItem(STORAGE_KEY);
+            if (raw) {
+                const parsed = JSON.parse(raw);
+                // Deep merge with defaults to handle missing keys after updates
+                return {
+                    thresholds: {
+                        wind:  { ...DEFAULTS.thresholds.wind,  ...(parsed.thresholds?.wind  || {}) },
+                        gusts: { ...DEFAULTS.thresholds.gusts, ...(parsed.thresholds?.gusts || {}) },
+                        rain:  { ...DEFAULTS.thresholds.rain,  ...(parsed.thresholds?.rain  || {}) }
+                    },
+                    sessions: {
+                        adults:  { ...DEFAULTS.sessions.adults,  ...(parsed.sessions?.adults  || {}) },
+                        juniors: { ...DEFAULTS.sessions.juniors, ...(parsed.sessions?.juniors || {}) },
+                        evening: { ...DEFAULTS.sessions.evening, ...(parsed.sessions?.evening || {}) }
+                    }
+                };
+            }
+        } catch(e) {}
+        return JSON.parse(JSON.stringify(DEFAULTS));
+    }
+
+    function saveSettings(s) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(s));
+    }
+
+    /* ================================================================
+       App state
+    ================================================================ */
+    let settings      = loadSettings();
+    let activeSession = 'adults';   // default session on load
+    let cachedByDate  = {};         // weather data cache
+    let selectedDate  = null;
+
+    /* Convenience: get current session window */
+    function currentWindow() { return settings.sessions[activeSession]; }
 
     /* ================================================================
        Helpers
@@ -213,7 +567,7 @@
         return { label:'Bad', bg:'#fee2e2', text:'#991b1b' };
     }
 
-    function computeMorningStats(dayData, windowStart, windowEnd) {
+    function computeWindowStats(dayData, windowStart, windowEnd) {
         let windMax = 0, gustMax = 0, rainSum = 0;
         let dirSinSum = 0, dirCosSum = 0, dirCount = 0;
         let codes = [];
@@ -223,7 +577,6 @@
                 windMax  = Math.max(windMax,  dayData.wind[i]);
                 gustMax  = Math.max(gustMax,  dayData.gusts[i]);
                 rainSum += dayData.rain[i];
-                // circular mean for wind direction
                 const rad = dayData.dir[i] * Math.PI / 180;
                 dirSinSum += Math.sin(rad);
                 dirCosSum += Math.cos(rad);
@@ -231,11 +584,9 @@
                 codes.push(dayData.code[i]);
             }
         });
-        // dominant weather code in the morning window (most frequent)
         const morningCode = codes.length
             ? codes.sort((a,b) => codes.filter(v=>v===b).length - codes.filter(v=>v===a).length)[0]
             : dayData.code[0];
-        // circular mean direction
         const morningDir = dirCount
             ? (Math.atan2(dirSinSum / dirCount, dirCosSum / dirCount) * 180 / Math.PI + 360) % 360
             : dayData.dir[0];
@@ -246,7 +597,7 @@
         const out = { time:[], wind:[], gusts:[], rain:[] };
         dayData.time.forEach((t, i) => {
             const hour = new Date(t).getHours();
-            if (hour >= 6 && hour <= 18) {
+            if (hour >= 6 && hour <= 20) {
                 out.time.push(new Date(t).toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' }));
                 out.wind.push(dayData.wind[i]);
                 out.gusts.push(dayData.gusts[i]);
@@ -291,15 +642,14 @@
             daylightChart.destroy();
         }
 
-        /* Dynamic axis bounds */
         const maxGust = Math.max(...daylightStats.gusts, 0);
         const maxRain = Math.max(...daylightStats.rain,  0);
-
-        // Wind axis: round up to nearest 10, at least 20, always include 20mph line
         const windMax  = Math.max(20, Math.ceil((maxGust * 1.15) / 10) * 10);
-        // Rain axis: round up to nearest 2, at least 2
         const rainMax  = Math.max(2,  Math.ceil((maxRain  * 1.2)  / 2)  * 2);
         const rainTick = rainMax <= 6 ? 1 : rainMax <= 12 ? 2 : 5;
+
+        // Reference line: amber wind threshold
+        const refLine = settings.thresholds.wind.amber;
 
         daylightChart = Highcharts.chart('daylightChart', {
             chart: { zoomType:'x', marginTop:10, marginBottom:42, spacingLeft:0, spacingRight:6 },
@@ -321,13 +671,13 @@
                     gridLineColor: '#e4ecf2',
                     lineColor: '#d0dce8',
                     plotLines: [{
-                        value: 20,
+                        value: refLine,
                         color: '#e53e3e',
                         dashStyle: 'Dot',
                         width: 2,
                         zIndex: 5,
                         label: {
-                            text: '20 mph',
+                            text: `${refLine} mph`,
                             align: 'right',
                             x: -4,
                             style: { color:'#e53e3e', fontSize:'9px', fontWeight:'600' }
@@ -379,78 +729,69 @@
     }
 
     /* ================================================================
-       Main
+       UI updaters
     ================================================================ */
-    async function init() {
-        const thresholds  = CONFIG.thresholds;
-        const windowStart = CONFIG.morningWindow.startHour;
-        const windowEnd   = CONFIG.morningWindow.endHour;
+    function updateWindowLabel() {
+        const w = currentWindow();
+        const NAMES = { adults:'Adults', juniors:'Juniors', evening:'Evening' };
+        document.getElementById('window-label').textContent =
+            `${NAMES[activeSession]} – ${String(w.startHour).padStart(2,'0')}:00–${String(w.endHour).padStart(2,'0')}:00`;
+    }
 
-        /* Live fetch */
-        const resp = await fetch(CONFIG.url, { mode:'cors' });
-        const data = await resp.json();
-        const hourly = data.hourly;
-
-        /* Group hourly rows by date */
-        const byDate = {};
-        hourly.time.forEach((t, i) => {
-            const date = t.split('T')[0];
-            if (!byDate[date]) byDate[date] = { time:[], wind:[], gusts:[], rain:[], dir:[], code:[] };
-            byDate[date].time.push(t);
-            byDate[date].wind.push(hourly.wind_speed_10m[i]);
-            byDate[date].gusts.push(hourly.wind_gusts_10m[i]);
-            byDate[date].rain.push(hourly.precipitation[i]);
-            byDate[date].dir.push(hourly.winddirection_10m[i]);
-            byDate[date].code.push(hourly.weathercode[i]);
+    function updateSessionButtons() {
+        document.querySelectorAll('.session-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.session === activeSession);
         });
+    }
 
-        const dates = Object.keys(byDate).slice(0, 4); // 4-day forecast
+    function updateCurrent(date) {
+        const d = cachedByDate[date];
+        if (!d) return;
+        const w = currentWindow();
+        const thresholds = settings.thresholds;
 
-        /* Update current-conditions panel */
-        function updateCurrent(date) {
-            const d = byDate[date];
-            if (!d) return;
+        const stats = computeWindowStats(d, w.startHour, w.endHour);
 
-            const stats = computeMorningStats(d, windowStart, windowEnd);
+        document.getElementById('weather-icon-display').textContent = getWeatherIcon(stats.morningCode);
+        document.getElementById('wind-dir-display').style.transform = `rotate(${stats.morningDir}deg)`;
+        document.getElementById('wind-dir-label').textContent        = degreeToCompass(stats.morningDir);
 
-            document.getElementById('weather-icon-display').textContent = getWeatherIcon(stats.morningCode);
-            document.getElementById('wind-dir-display').style.transform = `rotate(${stats.morningDir}deg)`;
-            document.getElementById('wind-dir-label').textContent        = degreeToCompass(stats.morningDir);
+        const setBadge = (id, label, val, thresh) => {
+            const c  = getStatusColor(val, thresh);
+            const el = document.getElementById(id);
+            el.textContent      = label;
+            el.style.background = STATUS_BG[c];
+            el.style.color      = STATUS_TEXT[c];
+            el.className        = 'badge';
+        };
+        setBadge('badge-rain',  `🌧 ${stats.rainSum.toFixed(1)} mm`,  stats.rainSum,  thresholds.rain);
+        setBadge('badge-wind',  `💨 ${stats.windMax.toFixed(0)} mph`, stats.windMax,  thresholds.wind);
+        setBadge('badge-gusts', `🌪️ ${stats.gustMax.toFixed(0)} mph`, stats.gustMax,  thresholds.gusts);
 
-            const setBadge = (id, label, val, thresh) => {
-                const c  = getStatusColor(val, thresh);
-                const el = document.getElementById(id);
-                el.textContent      = label;
-                el.style.background = STATUS_BG[c];
-                el.style.color      = STATUS_TEXT[c];
-                el.className        = 'badge';
-            };
-            setBadge('badge-rain',  `🌧 ${stats.rainSum.toFixed(1)} mm`,  stats.rainSum,  thresholds.rain);
-            setBadge('badge-wind',  `💨 ${stats.windMax.toFixed(0)} mph`, stats.windMax,  thresholds.wind);
-            setBadge('badge-gusts', `🌪️ ${stats.gustMax.toFixed(0)} mph`, stats.gustMax,  thresholds.gusts);
+        const rainCol = getStatusColor(stats.rainSum,  thresholds.rain);
+        const windCol = getStatusColor(stats.windMax,  thresholds.wind);
+        const gustCol = getStatusColor(stats.gustMax,  thresholds.gusts);
+        const pred    = getPrediction(rainCol, windCol, gustCol);
+        const PRED_ICONS = { Great:'🌟', Ok:'👍', Marginal:'⚠️', Bad:'❌' };
+        const predEl  = document.getElementById('badge-prediction');
+        predEl.textContent      = `${PRED_ICONS[pred.label] || ''} ${pred.label} conditions`;
+        predEl.style.background = pred.bg;
+        predEl.style.color      = pred.text;
+        predEl.style.border     = `1px solid ${pred.text}33`;
 
-            // Prediction badge
-            const rainCol = getStatusColor(stats.rainSum,  thresholds.rain);
-            const windCol = getStatusColor(stats.windMax,  thresholds.wind);
-            const gustCol = getStatusColor(stats.gustMax,  thresholds.gusts);
-            const pred    = getPrediction(rainCol, windCol, gustCol);
-            const PRED_ICONS = { Great:'🌟', Ok:'👍', Marginal:'⚠️', Bad:'❌' };
-            const predEl  = document.getElementById('badge-prediction');
-            predEl.textContent      = `${PRED_ICONS[pred.label] || ''} ${pred.label} conditions`;
-            predEl.style.background = pred.bg;
-            predEl.style.color      = pred.text;
-            predEl.style.border     = `1px solid ${pred.text}33`;
+        buildMeteogram(computeDaylightStats(d));
+        updateWindowLabel();
+    }
 
-            buildMeteogram(computeDaylightStats(d));
-        }
-
-        /* Build 4-day forecast cards */
+    function rebuildForecastStrip(dates) {
+        const thresholds = settings.thresholds;
+        const w = currentWindow();
         const container = document.getElementById('forecast-strip');
         container.innerHTML = '';
 
         dates.forEach(date => {
-            const d     = byDate[date];
-            const stats = computeMorningStats(d, windowStart, windowEnd);
+            const d     = cachedByDate[date];
+            const stats = computeWindowStats(d, w.startHour, w.endHour);
             const dow   = new Date(date).toLocaleDateString([], { weekday:'short' });
             const dom   = new Date(date).getDate();
             const mon   = new Date(date).toLocaleDateString([], { month:'short' });
@@ -463,7 +804,7 @@
             const col = document.createElement('div');
             col.className = 'col';
             col.innerHTML = `
-              <div class="forecast-day" data-date="${date}">
+              <div class="forecast-day${date === selectedDate ? ' selected' : ''}" data-date="${date}">
                 <div class="day-name">${dow} ${dom} ${mon}</div>
                 <div class="day-icon">${icon}</div>
                 <span class="metric-pill" style="background:${STATUS_BG[rainCol]};color:${STATUS_TEXT[rainCol]};">
@@ -478,17 +819,141 @@
               </div>`;
 
             col.querySelector('.forecast-day').addEventListener('click', () => {
+                selectedDate = date;
                 document.querySelectorAll('.forecast-day').forEach(c => c.classList.remove('selected'));
                 col.querySelector('.forecast-day').classList.add('selected');
                 updateCurrent(date);
             });
             container.appendChild(col);
         });
+    }
 
-        /* Select first day by default */
-        if (dates.length) {
-            container.querySelector('.forecast-day').classList.add('selected');
-            updateCurrent(dates[0]);
+    /* ================================================================
+       Settings panel
+    ================================================================ */
+    function populateSettingsForm() {
+        const t = settings.thresholds;
+        const s = settings.sessions;
+        document.getElementById('s-wind-green').value   = t.wind.green;
+        document.getElementById('s-wind-amber').value   = t.wind.amber;
+        document.getElementById('s-gusts-green').value  = t.gusts.green;
+        document.getElementById('s-gusts-amber').value  = t.gusts.amber;
+        document.getElementById('s-rain-green').value   = t.rain.green;
+        document.getElementById('s-rain-amber').value   = t.rain.amber;
+        document.getElementById('s-adults-start').value  = s.adults.startHour;
+        document.getElementById('s-adults-end').value    = s.adults.endHour;
+        document.getElementById('s-juniors-start').value = s.juniors.startHour;
+        document.getElementById('s-juniors-end').value   = s.juniors.endHour;
+        document.getElementById('s-evening-start').value = s.evening.startHour;
+        document.getElementById('s-evening-end').value   = s.evening.endHour;
+    }
+
+    function readSettingsForm() {
+        const n = id => parseFloat(document.getElementById(id).value);
+        return {
+            thresholds: {
+                wind:  { green: n('s-wind-green'),  amber: n('s-wind-amber')  },
+                gusts: { green: n('s-gusts-green'), amber: n('s-gusts-amber') },
+                rain:  { green: n('s-rain-green'),  amber: n('s-rain-amber')  }
+            },
+            sessions: {
+                adults:  { startHour: n('s-adults-start'),  endHour: n('s-adults-end')  },
+                juniors: { startHour: n('s-juniors-start'), endHour: n('s-juniors-end') },
+                evening: { startHour: n('s-evening-start'), endHour: n('s-evening-end') }
+            }
+        };
+    }
+
+    function showToast(msg) {
+        const el = document.getElementById('save-toast');
+        el.textContent = msg;
+        el.classList.add('show');
+        setTimeout(() => el.classList.remove('show'), 2000);
+    }
+
+    /* ================================================================
+       Settings event wiring
+    ================================================================ */
+    document.getElementById('settings-toggle').addEventListener('click', () => {
+        const drawer = document.getElementById('settings-drawer');
+        const isOpen = drawer.classList.toggle('open');
+        if (isOpen) populateSettingsForm();
+    });
+
+    document.getElementById('settings-save').addEventListener('click', () => {
+        const newSettings = readSettingsForm();
+        // Basic validation: green < amber
+        const t = newSettings.thresholds;
+        if (t.wind.green >= t.wind.amber || t.gusts.green >= t.gusts.amber || t.rain.green >= t.rain.amber) {
+            alert('Green threshold must be less than Amber threshold.');
+            return;
+        }
+        settings = newSettings;
+        saveSettings(settings);
+        document.getElementById('settings-drawer').classList.remove('open');
+        // Re-render with new settings
+        const dates = Object.keys(cachedByDate).slice(0, 4);
+        rebuildForecastStrip(dates);
+        if (selectedDate) updateCurrent(selectedDate);
+        showToast('✓ Settings saved');
+    });
+
+    document.getElementById('settings-reset').addEventListener('click', () => {
+        settings = JSON.parse(JSON.stringify(DEFAULTS));
+        saveSettings(settings);
+        populateSettingsForm();
+        const dates = Object.keys(cachedByDate).slice(0, 4);
+        rebuildForecastStrip(dates);
+        if (selectedDate) updateCurrent(selectedDate);
+        showToast('↺ Reset to defaults');
+    });
+
+    /* ================================================================
+       Session toggle wiring
+    ================================================================ */
+    document.getElementById('session-toggle').addEventListener('click', e => {
+        const btn = e.target.closest('.session-btn');
+        if (!btn) return;
+        activeSession = btn.dataset.session;
+        updateSessionButtons();
+        const dates = Object.keys(cachedByDate).slice(0, 4);
+        rebuildForecastStrip(dates);
+        if (selectedDate) updateCurrent(selectedDate);
+    });
+
+    /* ================================================================
+       Main
+    ================================================================ */
+    const API_URL = "https://api.open-meteo.com/v1/forecast?latitude=54.594723&longitude=-3.14536&hourly=temperature_2m,wind_speed_10m,wind_gusts_10m,winddirection_10m,precipitation,weathercode&wind_speed_unit=mph&timezone=auto";
+
+    async function init() {
+        const resp   = await fetch(API_URL, { mode:'cors' });
+        const data   = await resp.json();
+        const hourly = data.hourly;
+
+        /* Group by date */
+        hourly.time.forEach((t, i) => {
+            const date = t.split('T')[0];
+            if (!cachedByDate[date]) cachedByDate[date] = { time:[], wind:[], gusts:[], rain:[], dir:[], code:[] };
+            cachedByDate[date].time.push(t);
+            cachedByDate[date].wind.push(hourly.wind_speed_10m[i]);
+            cachedByDate[date].gusts.push(hourly.wind_gusts_10m[i]);
+            cachedByDate[date].rain.push(hourly.precipitation[i]);
+            cachedByDate[date].dir.push(hourly.winddirection_10m[i]);
+            cachedByDate[date].code.push(hourly.weathercode[i]);
+        });
+
+        const dates = Object.keys(cachedByDate).slice(0, 4);
+        selectedDate = dates[0];
+
+        updateSessionButtons();
+        rebuildForecastStrip(dates);
+
+        /* Select first day */
+        if (selectedDate) {
+            const first = document.querySelector('.forecast-day[data-date="' + selectedDate + '"]');
+            if (first) first.classList.add('selected');
+            updateCurrent(selectedDate);
         }
     }
 

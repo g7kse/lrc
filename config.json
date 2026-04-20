@@ -1,9 +1,0 @@
-{
-  "url": "https://api.open-meteo.com/v1/forecast?latitude=54.594723&longitude=-3.14536&hourly=temperature_2m,wind_speed_10m,wind_gusts_10m,winddirection_10m,precipitation,weathercode&wind_speed_unit=mph&timezone=auto",
-  "thresholds": {
-    "wind": { "green": 10, "amber": 18 },
-    "gusts": { "green": 15, "amber": 25 },
-    "rain": { "green": 1, "amber": 5 }
-  },
-  "morningWindow": { "startHour": 8, "endHour": 11 }
-}
